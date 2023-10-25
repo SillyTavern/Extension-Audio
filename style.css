@@ -39,7 +39,6 @@ gap: 12px; */
     width: 32px;
     height: 32px;
     border-radius: 12px;
-    display: block;
 }
 
 #audio_settings .audio-container .audio-mute-button-muted {
