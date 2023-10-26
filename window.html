@@ -22,9 +22,9 @@
                         <small>Debug</small>
                     </label>
                 </div>
-                <div>
+                <div class="flex row-reverse align-center justify-end gap-12">
                     <label for="audio_refresh_assets">Refresh assets</label>
-                    <div id="audio_refresh_assets" class="menu_button">
+                    <div id="audio_refresh_assets" class="menu_button btn-refresh">
                         <i class="fa-solid fa-refresh fa-lg"></i>
                     </div>
                 </div>
@@ -32,26 +32,26 @@
             <div>
                 <div class="audio-ui-block">
                     <label for="audio_bgm_volume_slider">Music</label>
-                    <div class="audio-mixer-div audio-container">
-                        <div class="audio-mixer-element audio-mixer-mute">
-                            <div id="audio_bgm_mute" class="menu_button audio-mute-button">
+                    <div class="audio-container">
+                        <div class="mute-div">
+                            <div id="audio_bgm_mute" class="menu_button audio-player-button">
                                 <i class="fa-solid fa-volume-high fa-lg fa-fw" id="audio_bgm_mute_icon"></i>
                             </div>
                         </div>
-                        <div class="audio-mixer-element vol audio-mixer-volume">
+                        <div class="vol">
                             <input type="range" class ="audio-slider" id ="audio_bgm_volume_slider" value = "0" maxlength ="100">
                         </div>
-                        <div class="audio-mixer-element playlist audio-mixer-playlist">
+                        <div class="playlist">
                             <select id="audio_bgm_select">
                             </select>
                         </div>
                         <div class="audio-mixer-element audio-mixer-lock">
-                            <div id="audio_bgm_lock" class="menu_button audio-lock-button">
+                            <div id="audio_bgm_lock" class="menu_button audio-player-button">
                                 <i class="fa-solid fa-repeat fa-lg fa-fw" id="audio_bgm_lock_icon"></i>
                             </div>
                         </div>
                         <div class="audio-mixer-element audio-mixer-random">
-                            <div id="audio_bgm_random" class="menu_button audio-random-button">
+                            <div id="audio_bgm_random" class="menu_button audio-player-button">
                                 <i class="fa-solid fa-random fa-lg fa-fw" id="audio_bgm_random_icon"></i>
                             </div>
                         </div>
@@ -60,21 +60,21 @@
                 </div>
                 <div>
                     <label for="audio_ambient_volume_slider">Ambient</label>
-                    <div class="audio-mixer-div audio-container">
-                        <div class="audio-mixer-element audio-mixer-mute">
-                            <div id="audio_ambient_mute" class="menu_button audio-mute-button">
+                    <div class="audio-container">
+                        <div class="mute-div">
+                            <div id="audio_ambient_mute" class="menu_button audio-player-button">
                                 <i class="fa-solid fa-volume-high fa-lg fa-fw" id="audio_ambient_mute_icon"></i>
                             </div>
                         </div>
-                        <div class="audio-mixer-element vol audio-mixer-volume">
+                        <div class="vol">
                             <input type="range" class ="audio-slider" id ="audio_ambient_volume_slider" value = "0" maxlength ="100">
                         </div>
-                        <div class="audio-mixer-element playlist audio-mixer-playlist">
+                        <div class="playlist">
                             <select id="audio_ambient_select">
                             </select>
                         </div>
                         <div class="audio-mixer-element">
-                            <div id="audio_ambient_lock" class="menu_button audio-lock-button">
+                            <div id="audio_ambient_lock" class="menu_button audio-player-button">
                                 <i class="fa-solid fa-lock-open fa-lg fa-fw" id="audio_ambient_lock_icon"></i>
                             </div>
                         </div>
