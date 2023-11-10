@@ -748,13 +748,14 @@ async function updateBGM(isUserInput = false, newChat = false) {
 
             if (isUserInput || extension_settings.audio.bgm_locked) {
                 audio.attr("src", audio_file_path);
+                audio.prop("volume", extension_settings.audio.bgm_volume * 0.01);
                 audio[0].play();
             }
             else {
                 audio.animate({ volume: 0.0 }, fade_time, function () {
                     audio.attr("src", audio_file_path);
                     audio[0].play();
-                    audio.volume = extension_settings.audio.bgm_volume * 0.01;
+                    audio.prop("volume", extension_settings.audio.bgm_volume * 0.01);
                     audio.animate({ volume: extension_settings.audio.bgm_volume * 0.01 }, fade_time);
                 });
             }
@@ -814,7 +815,7 @@ async function updateAmbient(isUserInput = false) {
     audio.animate({ volume: 0.0 }, fade_time, function () {
         audio.attr("src", audio_file_path);
         audio[0].play();
-        audio.volume = extension_settings.audio.ambient_volume * 0.01;
+        audio.prop("volume", extension_settings.audio.ambient_volume * 0.01);
         audio.animate({ volume: extension_settings.audio.ambient_volume * 0.01 }, fade_time);
     });
 }
