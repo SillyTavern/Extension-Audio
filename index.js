@@ -934,24 +934,24 @@ async function setBGMSlashCommand(_, file) {
         return;
     }
 
-    filebgmFile = file.trim().toLowerCase();
+    file = file.trim().toLowerCase();
 
     // Fuzzy search for sprite
-    //const fuse = new Fuse(fallback_BGMS);
-    //const results = fuse.search(bgmFile);
-    //const spriteItem = results[0]?.item;
 
     let selectElement = document.querySelectorAll('[id=audio_bgm_select]');
     let optionValues = [...selectElement[0].options].map(o => o.value);
-    console.debug(DEBUG_PREFIX,"DEBUG:",optionValues);
+    //console.debug(DEBUG_PREFIX,"DEBUG:",optionValues);
+    
+    const fuse = new Fuse(optionValues);
+    const results = fuse.search(file);
+    const fileItem = results[0]?.item;
 
-    if (!optionValues.includes(file)) {
+    if (!fileItem) {
         console.log('Bgm file path not valid');
         return;
     }
 
-
-    $("#audio_bgm_select").val(file);
+    $("#audio_bgm_select").val(fileItem);
     onBGMSelectChange();
 }
 
@@ -963,20 +963,19 @@ async function setAmbientSlashCommand(_, file) {
 
     file = file.trim().toLowerCase();
 
-    // Fuzzy search for sprite
-    //const fuse = new Fuse(fallback_BGMS);
-    //const results = fuse.search(bgmFile);
-    //const spriteItem = results[0]?.item;
-
     let selectElement = document.querySelectorAll('[id=audio_ambient_select]');
     let optionValues = [...selectElement[0].options].map(o => o.value);
-    console.debug(DEBUG_PREFIX,"DEBUG:",optionValues);
+    //console.debug(DEBUG_PREFIX,"DEBUG:",optionValues);
 
-    if (!optionValues.includes(file)) {
-        console.log('Ambient file path not valid');
+    const fuse = new Fuse(optionValues);
+    const results = fuse.search(file);
+    const fileItem = results[0]?.item;
+
+    if (!fileItem) {
+        console.log('Bgm file path not valid');
         return;
     }
 
-    $("#audio_ambient_select").val(file);
+    $("#audio_ambient_select").val(fileItem);
     onAmbientSelectChange();
 }
