@@ -923,7 +923,7 @@ jQuery(async () => {
     const wrapper = new ModuleWorkerWrapper(moduleWorker);
     setInterval(wrapper.update.bind(wrapper), UPDATE_INTERVAL);
     moduleWorker();
-    
+
     registerSlashCommand('music', setBGMSlashCommand, ['bgm'], '<span class="monospace">(file path)</span> – force change of bgm for given file', true, true);
     registerSlashCommand('ambient', setAmbientSlashCommand, [], '<span class="monospace">(file path)</span> – force change of ambient audio for given file', true, true);
 });
@@ -941,7 +941,7 @@ async function setBGMSlashCommand(_, file) {
     let selectElement = document.querySelectorAll('[id=audio_bgm_select]');
     let optionValues = [...selectElement[0].options].map(o => o.value);
     //console.debug(DEBUG_PREFIX,"DEBUG:",optionValues);
-    
+
     const fuse = new Fuse(optionValues);
     const results = fuse.search(file);
     const fileItem = results[0]?.item;
