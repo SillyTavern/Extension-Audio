@@ -210,6 +210,11 @@ async function onDynamicAmbientEnabledClick() {
     saveSettingsDebounced();
 }
 */
+
+//#############################//
+//  AUDIO                      //
+//#############################//
+
 async function onBGMLockClick() {
     extension_settings.audio.bgm_locked = !extension_settings.audio.bgm_locked;
     if (extension_settings.audio.bgm_locked) {
@@ -308,6 +313,23 @@ async function onBGMCooldownInput() {
     cooldownBGM = extension_settings.audio.bgm_cooldown * 1000;
     saveSettingsDebounced();
     console.debug(DEBUG_PREFIX, 'UPDATED BGM cooldown to', extension_settings.audio.bgm_cooldown);
+}
+
+//#############################//
+//  ADUIO / UI                 //
+//#############################//
+
+async function onAudioUIMuteClick(e) {
+    console.log('onAudioUIMuteClick');
+    extension_settings.audio.audioui_muted = !extension_settings.audio.audioui_muted;
+    $('#audio_ui_mute_icon').toggleClass('fa-volume-high');
+    $('#audio_ui_mute_icon').toggleClass('fa-volume-mute');
+    $('#audio_ui').prop('muted', !$('#audio_ui').prop('muted'));
+    $('#audio_ui_mute').toggleClass('redOverlayGlow');
+    saveSettingsDebounced();
+}
+
+async function onAudioUILockClick(e) {
 }
 
 //#############################//
@@ -851,6 +873,27 @@ function onVolumeSliderWheelEvent(e) {
 }
 
 //#############################//
+//  Button click               //
+//#############################//
+
+async function setupButtonsClick() {
+    const audio = new Audio("assets/sfx/shutter.wav");
+    audio.volume = 1;
+
+    const slector = ".menu_button, " +
+        "#extensionsMenuButton, #options_button, #send_but, " +
+        ".extensions_block .inline-drawer .inline-drawer-toggle, " +
+        "#top-settings-holder .drawer .drawer-icon";
+
+    // add click event to all buttons
+    $(document).on("click", slector, function () {
+        console.log('click');
+        audio.currentTime = 0;
+        audio.play();
+    });
+}
+
+//#############################//
 //  Extension load             //
 //#############################//
 
@@ -879,8 +922,13 @@ jQuery(async () => {
     $('#audio_ambient_mute').on('click', onAmbientMuteClick);
     $('#audio_ambient_volume_slider').on('input', onAmbientVolumeChange);
 
+    $('#audio_ui').hide();
+    $('#audio_ui_mute').on('click', onAudioUIMuteClick);
+    // $('#audio_ui_volume_slider').on('input', onAudioUIVolumeChange);
+
     document.getElementById('audio_ambient_volume_slider').addEventListener('wheel', onVolumeSliderWheelEvent, { passive: false });
     document.getElementById('audio_bgm_volume_slider').addEventListener('wheel', onVolumeSliderWheelEvent, { passive: false });
+    document.getElementById('audio_ui_volume_slider').addEventListener('wheel', onVolumeSliderWheelEvent, { passive: false });
 
     $('#audio_bgm_cooldown').on('input', onBGMCooldownInput);
 
@@ -926,6 +974,8 @@ jQuery(async () => {
 
     registerSlashCommand('music', setBGMSlashCommand, ['bgm'], '<span class="monospace">(file path)</span> – force change of bgm for given file', true, true);
     registerSlashCommand('ambient', setAmbientSlashCommand, [], '<span class="monospace">(file path)</span> – force change of ambient audio for given file', true, true);
+
+    setupButtonsClick();
 });
 
 async function setBGMSlashCommand(_, file) {

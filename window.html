@@ -58,6 +58,34 @@
                     </div>
                     <audio id="audio_bgm" controls src="">
                 </div>
+                <div class="audio-ui-block">
+                    <label for="audio_ui_volume_slider">UI</label>
+                    <div class="audio-container">
+                        <div class="mute-div">
+                            <div id="audio_ui_mute" class="menu_button audio-player-button">
+                                <i class="fa-solid fa-volume-high fa-lg fa-fw" id="audio_ui_mute_icon"></i>
+                            </div>
+                        </div>
+                        <div class="vol">
+                            <input type="range" class ="audio-slider" id ="audio_ui_volume_slider" value = "0" maxlength ="100">
+                        </div>
+                        <div class="playlist">
+                            <select id="audio_ui_select">
+                            </select>
+                        </div>
+                        <!-- <div class="audio-mixer-element audio-mixer-lock">
+                            <div id="audio_bgm_lock" class="menu_button audio-player-button">
+                                <i class="fa-solid fa-repeat fa-lg fa-fw" id="audio_bgm_lock_icon"></i>
+                            </div>
+                        </div>
+                        <div class="audio-mixer-element audio-mixer-random">
+                            <div id="audio_bgm_random" class="menu_button audio-player-button">
+                                <i class="fa-solid fa-random fa-lg fa-fw" id="audio_bgm_random_icon"></i>
+                            </div>
+                        </div> -->
+                    </div>
+                    <audio id="audio_ui" controls src="">
+                </div>
                 <div>
                     <label for="audio_ambient_volume_slider">Ambient</label>
                     <div class="audio-container">
@@ -75,7 +103,7 @@
                         </div>
                         <div class="audio-mixer-element">
                             <div id="audio_ambient_lock" class="menu_button audio-player-button">
-                                <i class="fa-solid fa-lock-open fa-lg fa-fw" id="audio_ambient_lock_icon"></i>
+                                <i class="fa-solid fa-lock-open fa-lg fa-fw" id="audio_ui_lock_icon"></i>
                             </div>
                         </div>
                     </div>
