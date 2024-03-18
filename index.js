@@ -28,6 +28,7 @@ const UPDATE_INTERVAL = 1000;
 const ASSETS_BGM_FOLDER = 'bgm';
 const ASSETS_AMBIENT_FOLDER = 'ambient';
 const CHARACTER_BGM_FOLDER = 'bgm';
+const ASSETS_UI_INTERACTIONS_FOLDER = 'sfx';
 
 const FALLBACK_EXPRESSION = 'neutral';
 const DEFAULT_EXPRESSIONS = [
@@ -98,6 +99,255 @@ const defaultSettings = {
 
     bgm_cooldown: 30,
 };
+
+
+
+// CLASSES : ( experimental ) DropDown
+
+class dropdown extends EventTarget {
+    dialog = null;
+    dialogBody = null;
+    id = '';
+    dropdown = null;
+    items = null;
+    value = null;
+    constructor(id) {
+        super();
+        this.id = id;
+        this.dropdown = `div.dropdown${ id ? `#${id}` : '' }`;
+        this.items = [];
+    }
+
+    addItems(items) {
+        console.log('Adding items', items);
+        items = items.filter((item) => item);
+        this.items = items;
+    }
+
+    draw(opts) {
+        const base = $(`<div class='dropdown' id='${this.id}' style='${opts && opts.style ? opts.style : ''}'>
+            <p class='selected'>Select</p>
+        </div>`);
+        return base;
+    }
+
+    remove() {
+        $(this.dropdown).removeClass('open');
+        this.dialog.remove();
+    }
+
+    openDropdown(c, dispatch) {
+        const dialog = $(`<div class='dropdown-dialog'>
+            <div class="dismiss-box"></div>
+        </div>`);
+        const dialogBody = $(`<div class='body'>
+        <div class='btn-close' style="display: flex;">${
+            c.items.filter((item) => item.value === c.value)[0].text
+        }
+            <div class='icon ico-white' style="margin-left: auto; height:auto;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>close</title><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
+            </div>
+        </div>
+        </div>`);
+        dialog.append(dialogBody);
+        c.dialog = dialog;
+        c.dialogBody = dialogBody;
+        $('body').append(c.dialog);
+
+        c.items.forEach((item) => {
+            // is value or text missing?
+            if (!item.value || !item.text) {
+                console.error('Invalid item', item);
+                return;
+            }
+
+            const el = $("<div class='item' data-value='"+item.value+"'>"+item.text+"</div>");
+            if (item.value === c.value) {
+                el.addClass('selected');
+            }
+            el.on('click', () => {
+                c.setValue(item.value);
+                $(c.dropdown).removeClass('open');
+                dispatch(c.id, item.value);
+                dialog.remove();
+            });
+            dialogBody.append(el);
+        });
+
+        const leftright_padding =
+            $(c.dropdown).css('padding-left').replace('px', '') * 1 +
+            $(c.dropdown).css('padding-right').replace('px', '') * 1;
+
+        c.dialogBody.css({
+            top:  $(c.dropdown).offset().top - window.scrollY,
+            left: $(c.dropdown).offset().left,
+            width: $(c.dropdown).width() + leftright_padding + 2,
+        });
+        dialog.addClass('open');
+        dialog.find('.dismiss-box').on('click', () => {
+            $(c.dropdown).removeClass('open');
+            dialog.remove();
+        });
+        dialogBody.find('.btn-close').on('click', () => {
+            $(c.dropdown).removeClass('open');
+            dialog.remove();
+        });
+
+        // call resize event
+        // $(window).trigger('resize');
+    }
+
+    init() {
+        const dropdown = $(this.dropdown);
+        const openDropdown = this.openDropdown;
+        const dispatch = (id, value) => {
+            const event = new Event('change', {});
+            event.detail = {
+                id: id,
+                value: value
+            };
+            this.dispatchEvent(event);
+        }
+        const c = this;
+
+        const relocateDialog = (c) => {
+            const leftright_padding =
+                $(c.dropdown).css('padding-left').replace('px', '') * 1 +
+                $(c.dropdown).css('padding-right').replace('px', '') * 1;
+
+            c.dialogBody.css({
+                top:  $(c.dropdown).offset().top - window.scrollY,
+                left: $(c.dropdown).offset().left,
+                width: $(c.dropdown).width() + leftright_padding + 2,
+            });
+        }
+
+
+        // watch for window resize
+        $(window).on('resize', function() {
+            if (c.dialogBody) {
+                relocateDialog(c);
+            }
+        });
+        // watch for window scroll
+        $(window).on('scroll', function() {
+            if (c.dialogBody) {
+                relocateDialog(c);
+            }
+        });
+
+        dropdown.on('click', function() {
+            if (dropdown.hasClass('open')) {
+                dropdown.removeClass('open');
+                c.dialog.remove();
+            } else {
+                dropdown.addClass('open');
+                openDropdown(c, dispatch);
+            }
+        });
+
+        // check if the mouse is outside the dropdown
+    }
+
+    on(event, callback) {
+        this.addEventListener(event, (event) => {
+            callback(event);
+        });
+    }
+
+    setValue(value) {
+        this.value = value;
+        try {
+            $(`${this.dropdown} .selected`).text(this.items.filter((item) => item.value === value)[0].text);
+        } catch (e) {
+            console.error('Error setting value', e);
+        }
+    }
+}
+
+class UIInteractions {
+    audioClick = new Audio();
+    audioHover = new Audio();
+    randomSounds = false;
+    constructor() {
+        this.audioClick.src = "assets/sfx/CLICK_17.ogg"
+        this.audioHover.src = "assets/sfx/UI_Hover.ogg"
+        this.assetsfolder = 'assets/sfx/';
+        this.assets = [
+            "shutter.wav",
+            // "quandale dingle sounds/NO.wav",
+            // "quandale dingle sounds/OW.wav",
+            // "quandale dingle sounds/STOP.wav",
+            // "quandale dingle sounds/WHAT.wav",
+            // "quandale dingle sounds/beralalelaale.wav",
+            // "quandale dingle sounds/elelewlelwlaoh.wav",
+            // "quandale dingle sounds/goofy laugh.wav",
+            // "quandale dingle sounds/GRUROOAH.wav",
+            // "quandale dingle sounds/hoowuhmmm.wav",
+            // "quandale dingle sounds/huwwuuwao.wav",
+            // "quandale dingle sounds/mmm yummy.wav",
+            // "quandale dingle sounds/obobobor.wav",
+            // "quandale dingle sounds/onsuckme.wav",
+            // "quandale dingle sounds/oyaah.wav",
+            // "quandale dingle sounds/roroaorh.wav",
+            // "quandale dingle sounds/RUAOOOH.wav",
+            // "quandale dingle sounds/RUOAAAOH.wav",
+            // "quandale dingle sounds/scooby laugh.wav",
+            // "quandale dingle sounds/something pen idk.wav",
+            // "quandale dingle sounds/what in tarnation.wav",
+            // "quandale dingle sounds/wooohhm.wav",
+            // "quandale dingle sounds/wruoahohhuhu.wav",
+            // "quandale dingle sounds/wuaauruoh.wav"
+        ]
+        // goofy
+        // this.audioHover.src = "assets/sfx/goofy/Bonk Sound Effect 2 (1).wav";
+    }
+
+    setRandomSounds(sounds) {
+        this.assets = sounds;
+    }
+
+    setEnableRandomSounds(enable) {
+    }
+
+    setVolume(volume) {
+        console.log('Setting volume', volume);
+        this.audioClick.volume = volume;
+        this.audioHover.volume = volume;
+    }
+    init() {
+        const audioClick = this.audioClick;
+        const audioHover = this.audioHover;
+        audioClick.volume = 0.5;
+        audioHover.volume = 0.5;
+
+        const slector_click = "select, input[tyoe='checkbox'], input[type='radio'], " +
+            ".menu_button, " +
+            "#extensionsMenuButton, #options_button, #send_but, " +
+            ".extensions_block .inline-drawer .inline-drawer-toggle, " +
+            "#top-settings-holder .drawer .drawer-icon";
+
+        const assets = this.assets;
+        const assetsfolder = this.assetsfolder;
+        const randomSounds = true;
+
+        // add click event to all buttons
+        $(document).on("click", slector_click, function() {
+            if (randomSounds) {
+                const sound = assetsfolder + assets[Math.floor(Math.random() * Object.keys(assets).length)];
+                audioClick.src = sound;
+            }
+            audioClick.currentTime = 0;
+            audioClick.play();
+        });
+
+        const slector_hover = "button, .menu_button, .inline-drawer-toggle, .drawer-icon";
+        $(document).on("mouseenter", slector_hover, function() {
+            audioHover.currentTime = 0;
+            audioHover.play();
+        });
+    }
+}
 
 function loadSettings() {
     if (extension_settings.audio === undefined)
@@ -327,6 +577,19 @@ async function onAudioUIMuteClick(e) {
     $('#audio_ui').prop('muted', !$('#audio_ui').prop('muted'));
     $('#audio_ui_mute').toggleClass('redOverlayGlow');
     saveSettingsDebounced();
+}
+async function toggleAudioUIMuteButton(b) {
+    if (b) {
+        $('#audio_ui_mute_icon').removeClass('fa-volume-high');
+        $('#audio_ui_mute_icon').addClass('fa-volume-mute');
+        $('#audio_ui_mute').addClass('redOverlayGlow');
+        $('#audio_ui').prop('muted', true);
+    } else {
+        $('#audio_ui_mute_icon').addClass('fa-volume-high');
+        $('#audio_ui_mute_icon').removeClass('fa-volume-mute');
+        $('#audio_ui_mute').removeClass('redOverlayGlow');
+        $('#audio_ui').prop('muted', false);
+    }
 }
 
 async function onAudioUILockClick(e) {
@@ -909,7 +1172,11 @@ jQuery(async () => {
     //$("#audio_dynamic_ambient_enabled").on("click", onDynamicAmbientEnabledClick);
 
     //$("#audio_bgm").attr("loop", false);
-    $('#audio_ambient').attr('loop', true);
+    $('#audio_ambient').attr('loop', "true");
+
+
+    const audiouiclick = new UIInteractions();
+    audiouiclick.init();
 
     $('#audio_bgm').hide();
     $('#audio_bgm_lock').on('click', onBGMLockClick);
@@ -923,8 +1190,22 @@ jQuery(async () => {
     $('#audio_ambient_volume_slider').on('input', onAmbientVolumeChange);
 
     $('#audio_ui').hide();
-    $('#audio_ui_mute').on('click', onAudioUIMuteClick);
-    // $('#audio_ui_volume_slider').on('input', onAudioUIVolumeChange);
+    $('#audio_ui_mute').on('click', (e) => {
+        audiouiclick.audioClick.currentTime = 0;
+        audiouiclick.audioClick.play();
+        // is it muted?
+        toggleAudioUIMuteButton(!extension_settings.audio.ui_muted)
+        onAudioUIMuteClick(e);
+    });
+    $('#audio_ui_volume_slider').on('input', (e) => {
+        audiouiclick.audioClick.currentTime = 0;
+        audiouiclick.audioClick.play();
+        audiouiclick.setVolume($('#audio_ui_volume_slider').val() * 0.01);
+        extension_settings.audio.ui_volume = $('#audio_ui_volume_slider').val();
+        saveSettingsDebounced();
+    });
+
+    audiouiclick.setVolume(extension_settings.audio.ui_volume * 0.01);
 
     document.getElementById('audio_ambient_volume_slider').addEventListener('wheel', onVolumeSliderWheelEvent, { passive: false });
     document.getElementById('audio_bgm_volume_slider').addEventListener('wheel', onVolumeSliderWheelEvent, { passive: false });
@@ -974,8 +1255,6 @@ jQuery(async () => {
 
     registerSlashCommand('music', setBGMSlashCommand, ['bgm'], '<span class="monospace">(file path)</span> – force change of bgm for given file', true, true);
     registerSlashCommand('ambient', setAmbientSlashCommand, [], '<span class="monospace">(file path)</span> – force change of ambient audio for given file', true, true);
-
-    setupButtonsClick();
 });
 
 async function setBGMSlashCommand(_, file) {
@@ -1027,5 +1306,5 @@ async function setAmbientSlashCommand(_, file) {
     }
 
     $('#audio_ambient_select').val(fileItem);
-    onAmbientSelectChange();
+    // audiouiclick.audio.src = 'assets/sfx/fard.mp3';
 }

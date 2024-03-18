@@ -80,3 +80,158 @@ gap: 12px; */
     height: 100%;
     margin: 0 !important;
 }
+
+#audio_settings .audio-container>.config {
+    display: flex;
+    gap: 10px;
+}
+
+/* MODAL CSS */
+
+#modal-container {
+    --modal-header-color: rgba(0,0,0, 0);
+    --modal-body-color: rgb(25, 25, 25);
+    --modal-border-color: rgb(60, 60, 60);
+    --header-footer-color: rgba(0, 0, 0, 0);
+}
+
+#modal-container {
+    pointer-events: none;
+    position: fixed;
+    width: -webkit-fill-available;
+    width: -moz-available;
+    height: -webkit-fill-available;
+    height: -moz-available;
+    height: 100vh;
+    /* backdrop-filter: blur(4px); */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+    opacity: 0;
+    overflow: auto;
+    top: 0;
+    left: 0;
+}
+
+#modal-container.hide {
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s linear;
+}
+#modal-container.show {
+    pointer-events: all;
+    opacity: 1;
+    transition: opacity 0.3s linear;
+}
+#modal-container > .modal-wrapper {
+    width: -webkit-fill-available;
+    width: -moz-available;
+    height: -webkit-fill-available;
+    height: -moz-available;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    overflow: auto;
+    top: 0;
+    left: 0;
+    background-color: rgba(0,0,0,0.5);
+    transition: opacity 0.3s linear;
+}
+#modal-container > .modal-wrapper.active {
+    pointer-events: all;
+    opacity: 1;
+}
+#modal-container > .modal-wrapper > .modal {
+    width: -webkit-fill-available;
+    width: -moz-available;
+    max-width: 800px;
+    margin: 20px;
+    background-color: var(--modal-body-color);
+    border-radius: 12px;
+    border: 1px solid var(--modal-border-color);
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: transform 0.2s ease-in,
+                opacity 0.2s linear
+    ;
+    max-height: -webkit-fill-available;
+    max-height: -moz-available;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 64px 2px rgba(0,0,0,0.4);
+}
+#modal-container > .modal-wrapper.active > .modal {
+    opacity: 1;
+    /* bounce */
+    transition: transform 0.4s cubic-bezier(0, 0, 0.0, 1.3),
+                opacity 0.1s linear
+    ;
+    transform: scale(1);
+}
+#modal-container > .modal-wrapper > .modal.modal-exlg {
+    max-width: 1200px;
+}
+#modal-container > .modal-wrapper > .modal.modal-lg {
+    max-width: 1000px;
+}
+#modal-container > .modal-wrapper > .modal.modal-md {
+    max-width: 600px;
+}
+#modal-container > .modal-wrapper > .modal.modal-sm {
+    max-width: 400px;
+}
+#modal-container > .modal-wrapper > .modal.modal-tiny {
+    max-width: 200px;
+}
+/* modalheader */
+#modal-container > .modal-wrapper > .modal > .header {
+    width: -webkit-fill-available;
+    width: -moz-available;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    padding-top: 20px;
+    box-sizing: border-box;
+}
+#modal-container > .modal-wrapper > .modal > .header .title {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+/* content */
+#modal-container > .modal-wrapper > .modal > .content {
+    width: -webkit-fill-available;
+    width: -moz-available;
+    box-sizing: border-box;
+    height: -webkit-fill-available;
+    height: -moz-available;
+    overflow: auto;
+}
+#modal-container > .modal-wrapper> .modal > .content > .inner {
+    width: -webkit-fill-available;
+    width: -moz-available;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+/* footer */
+#modal-container > .modal-wrapper> .modal > .footer {
+    width: -webkit-fill-available;
+    width: -moz-available;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px;
+    box-sizing: border-box;
+    /* background: linear-gradient(to right, rgba(0, 0, 0, 0.5), var(--card-header-color), rgba(0, 0, 0, 0.5)); */
+    /* background-color: var(--card-header-color); */
+    /* background: linear-gradient(to bottom, var(--card-header-color), rgba(60,60,60, 0.5));
+    border-top: 1px solid var(--header-footer-color); */
+}
