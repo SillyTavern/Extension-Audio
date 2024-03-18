@@ -18,6 +18,8 @@ import { isDataURL } from '../../../utils.js';
 import { registerSlashCommand } from '../../../slash-commands.js';
 export { MODULE_NAME };
 
+import { modalAPI, modalCreator } from './libs/modal.js';
+
 const extensionName = 'Extension-Audio';
 const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
 
@@ -301,6 +303,10 @@ class UIInteractions {
         ]
         // goofy
         // this.audioHover.src = "assets/sfx/goofy/Bonk Sound Effect 2 (1).wav";
+    }
+
+    setRandomSoundsEnabled(enable) {
+        this.randomSounds = enable;
     }
 
     setRandomSounds(sounds) {
@@ -1203,6 +1209,53 @@ jQuery(async () => {
         audiouiclick.setVolume($('#audio_ui_volume_slider').val() * 0.01);
         extension_settings.audio.ui_volume = $('#audio_ui_volume_slider').val();
         saveSettingsDebounced();
+    });
+    $('#audio_ui_config').on('click', (e) => {
+        const m = new modalCreator(
+            "config-ui-interactions",
+            "UI Interactions",
+            $(`<div class="style-config-ui-interactions">
+                <div class="config-section">
+                    <h3>Clicking Behavior</h3>
+                    <div id="confog-section-clicking-behavior" class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: space-between;">
+                        <div id="config-ui-clicking-sound" class="config-input">
+                            <p>Clicking sound</p>
+                            <div class="config-input">
+                            </div>
+                        </div>
+                        <div>
+                            <p>File(s)</p>
+                            <div class="config-input">
+                                <input type="text" id="audio_ui_click" value="${extension_settings.audio.ui_click}" />
+                                <label for="audio_ui_click">Click</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`),
+            $(`<div>
+                <div class="menu_button" id="modal-close">Close</div>
+            </div>`),
+            {}
+        )
+
+        m.create();
+        m.show();
+
+        const dropdown_clicking_sound_type = new dropdown('config-clicking-behavior-sound-drop')
+        dropdown_clicking_sound_type.addItems([
+            { value: 'default', text: 'Single' },
+            { value: 'custom', text: 'Multiple' }
+        ]);
+        dropdown_clicking_sound_type.setValue('default');
+        $(`#${m.id} #confog-section-clicking-behavior #config-ui-clicking-sound .config-input`)
+            .append(dropdown_clicking_sound_type.draw());
+        dropdown_clicking_sound_type.init();
+
+        $(`#${m.id} #modal-close`).on('click', () => {
+            console.log('close');
+            modalAPI.removeModal(m.id);
+        });
     });
 
     audiouiclick.setVolume(extension_settings.audio.ui_volume * 0.01);

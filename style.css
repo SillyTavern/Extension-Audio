@@ -86,16 +86,153 @@ gap: 12px; */
     gap: 10px;
 }
 
+/* STYLES */
+
+.style-config-ui-interactions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.style-config-ui-interactions>.config-section {
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px rgb(75, 75, 75) solid;
+}
+.style-config-ui-interactions>.config-section>.config-row {
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 4px;
+    border-bottom: 1px rgb(75, 75, 75) solid;
+}
+
+.style-config-ui-interactions>.config-section>.config-row.config-row-last {
+    border-bottom: none;
+}
+
+/* DROPDOWN */
+
+#modal-container[for-extension="dynamic-audio"] .dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    background-color: var(--SmartThemeBlurTintColor);
+    border-radius: 4px;
+    border: 1px solid #3f3f3f;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+#modal-container[for-extension="dynamic-audio"] .dropdown p,
+#modal-container[for-extension="dynamic-audio"] .dropdown-dialog * {
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+#modal-container[for-extension="dynamic-audio"] .dropdown.open p {
+    color: var(--SmartThemeBodyColor);
+}
+
+.dropdown-dialog {
+    --dropdown-bg-color: var(--SmartThemeBlurTintColor);
+    --dropdown-text-color: var(--SmartThemeBodyColor);
+    --dropdown-border-color: #3f3f3f;
+    --dropdown-hover-color: #4f4f4f;
+    --dropdown-select-color: #4f4f4f;
+}
+
+.dropdown-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 5500;
+    width: 100dvw;
+    height: 100dvh;
+    background-color: rgba(0,0,0,0.0);
+    pointer-events: none;
+}
+.dropdown-dialog>.dismiss-box {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: all;
+}
+.dropdown-dialog.open {
+    background-color: rgba(0,0,0,0.5);
+    pointer-events: all;
+    transition: background-color 0.3s linear;
+}
+.dropdown-dialog .body {
+    position: absolute;
+    background-color: var(--dropdown-bg-color);
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    border: 1px solid var(--dropdown-border-color);
+    overflow: auto;
+    max-height: 500px;
+    width: 100%;
+}
+.dropdown-dialog .item {
+    color: var(--dropdown-text-color);
+    padding-left: 24px;
+    height: 32px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+.dropdown-dialog .btn-close {
+    background-color: var(--dropdown-select-color);
+    top: 0;
+    right: 0;
+    padding: 12px 12px;
+    padding-left: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--table-border-color);
+}
+.dropdown-dialog .item.selected {
+    background-color: var(--dropdown-select-color);
+    opacity: 0.8;
+}
+/* item item-select */
+.dropdown-dialog .item-select {
+    background-color: var(--dropdown-select-color);
+}
+.dropdown-dialog .item:hover {
+    background-color: var(--dropdown-hover-color);
+}
+.dropdown-dialog .icon,
+.dropdown-dialog .icon svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+}
+.dropdown-dialog .icon.ico-white {
+    fill: var(--dropdown-text-color);
+}
+
+
 /* MODAL CSS */
 
-#modal-container {
+#modal-container[for-extension="dynamic-audio"] {
     --modal-header-color: rgba(0,0,0, 0);
     --modal-body-color: rgb(25, 25, 25);
     --modal-border-color: rgb(60, 60, 60);
     --header-footer-color: rgba(0, 0, 0, 0);
 }
 
-#modal-container {
+#modal-container[for-extension="dynamic-audio"] {
     pointer-events: none;
     position: fixed;
     width: -webkit-fill-available;
@@ -114,17 +251,17 @@ gap: 12px; */
     left: 0;
 }
 
-#modal-container.hide {
+#modal-container[for-extension="dynamic-audio"].hide {
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.3s linear;
+    transition: opacity 0.5s linear;
 }
-#modal-container.show {
+#modal-container[for-extension="dynamic-audio"].show {
     pointer-events: all;
     opacity: 1;
-    transition: opacity 0.3s linear;
+    transition: opacity 0.2s linear;
 }
-#modal-container > .modal-wrapper {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper {
     width: -webkit-fill-available;
     width: -moz-available;
     height: -webkit-fill-available;
@@ -142,25 +279,23 @@ gap: 12px; */
     background-color: rgba(0,0,0,0.5);
     transition: opacity 0.3s linear;
 }
-#modal-container > .modal-wrapper.active {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper.active {
     pointer-events: all;
     opacity: 1;
 }
-#modal-container > .modal-wrapper > .modal {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper > .modal {
     width: -webkit-fill-available;
     width: -moz-available;
     max-width: 800px;
     margin: 20px;
     background-color: var(--modal-body-color);
-    border-radius: 12px;
+    border-radius: 4px;
     border: 1px solid var(--modal-border-color);
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
     opacity: 0;
-    transform: scale(0.5);
-    transition: transform 0.2s ease-in,
-                opacity 0.2s linear
+    transition: opacity 0.2s linear
     ;
     max-height: -webkit-fill-available;
     max-height: -moz-available;
@@ -168,31 +303,29 @@ gap: 12px; */
     flex-direction: column;
     box-shadow: 0 24px 64px 2px rgba(0,0,0,0.4);
 }
-#modal-container > .modal-wrapper.active > .modal {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper.active > .modal {
     opacity: 1;
     /* bounce */
-    transition: transform 0.4s cubic-bezier(0, 0, 0.0, 1.3),
-                opacity 0.1s linear
+    transition: opacity 0.1s linear
     ;
-    transform: scale(1);
 }
-#modal-container > .modal-wrapper > .modal.modal-exlg {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper > .modal.modal-exlg {
     max-width: 1200px;
 }
-#modal-container > .modal-wrapper > .modal.modal-lg {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper > .modal.modal-lg {
     max-width: 1000px;
 }
-#modal-container > .modal-wrapper > .modal.modal-md {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper > .modal.modal-md {
     max-width: 600px;
 }
-#modal-container > .modal-wrapper > .modal.modal-sm {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper > .modal.modal-sm {
     max-width: 400px;
 }
-#modal-container > .modal-wrapper > .modal.modal-tiny {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper > .modal.modal-tiny {
     max-width: 200px;
 }
 /* modalheader */
-#modal-container > .modal-wrapper > .modal > .header {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper > .modal > .header {
     width: -webkit-fill-available;
     width: -moz-available;
     display: flex;
@@ -202,12 +335,12 @@ gap: 12px; */
     padding-top: 20px;
     box-sizing: border-box;
 }
-#modal-container > .modal-wrapper > .modal > .header .title {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper > .modal > .header .title {
     font-size: 1.5rem;
     font-weight: 600;
 }
 /* content */
-#modal-container > .modal-wrapper > .modal > .content {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper > .modal > .content {
     width: -webkit-fill-available;
     width: -moz-available;
     box-sizing: border-box;
@@ -215,14 +348,14 @@ gap: 12px; */
     height: -moz-available;
     overflow: auto;
 }
-#modal-container > .modal-wrapper> .modal > .content > .inner {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper> .modal > .content > .inner {
     width: -webkit-fill-available;
     width: -moz-available;
     padding: 0 20px;
     box-sizing: border-box;
 }
 /* footer */
-#modal-container > .modal-wrapper> .modal > .footer {
+#modal-container[for-extension="dynamic-audio"] > .modal-wrapper> .modal > .footer {
     width: -webkit-fill-available;
     width: -moz-available;
     display: flex;

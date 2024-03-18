@@ -4,6 +4,12 @@
 
 const modalmap = new Map()
 let modalContainer = $('#modal-container[for-extension="dynamic-audio"]')
+if (modalContainer.length === 0) {
+    console.log('Modal container does not exist, creating it')
+    // prepend the modal container to the body
+    $('body').prepend('<div id="modal-container" for-extension="dynamic-audio"></div>')
+    modalContainer = $('#modal-container[for-extension="dynamic-audio"]')
+}
 
 const createModal = function (id, title, body, footer, settings) {
     const randomid = Math.random().toString(36).substring(7);
@@ -14,8 +20,8 @@ const createModal = function (id, title, body, footer, settings) {
                 <div class="title"><span ${ settings && settings.title_i18n ? `data-i18n="${settings.title_i18n}"` : ''}	>${title}</span></div>
                 ${ settings && settings.showclosebutton ? ` <div class="close"><span>&times;</span></div>` : ''}
             </div>
-            <div class="content"><div class="inner">${body}</div></div>
-            ${ footer ? `<div class="footer">${footer}</div>` : ''}
+            <div class="content"><div class="inner">${body.prop("outerHTML")}</div></div>
+            ${ footer ? `<div class="footer">${footer.prop("outerHTML")}</div>` : ''}
         </div>
     </div>
     `);
@@ -34,8 +40,8 @@ class modalCreator {
     /**
      * @param {string} id
      * @param {string} title
-     * @param {string} body
-     * @param {string} footer
+     * @param {any} body
+     * @param {any} footer
      * @param {*} settings
      */
     constructor(id, title, body, footer, settings) {
@@ -43,12 +49,6 @@ class modalCreator {
         if (typeof this.settings !== 'object') {throw new Error('Settings must be an object')}
 
         // does the modal-container exist?
-        if (modalContainer.length === 0) {
-            console.log('Modal container does not exist, creating it')
-            // prepend the modal container to the body
-            $('body').prepend('<div id="modal-container" for-extension="dynamic-audio"></div>')
-            modalContainer = $('#modal-container')
-        }
     }
     create() {
         const modal = createModal(this.id, this.title, this.body, this.footer, this.settings);
