@@ -272,9 +272,9 @@ class UIInteractions {
     audioHover = new Audio();
     randomSounds = false;
     constructor() {
-        this.audioClick.src = "assets/sfx/CLICK_17.ogg"
-        this.audioHover.src = "assets/sfx/UI_Hover.ogg"
         this.assetsfolder = 'assets/sfx/';
+        this.audioClick.src = this.assetsfolder + "CLICK_17.ogg"
+        this.audioHover.src = this.assetsfolder + "UI_Hover.ogg"
         this.assets = [
             "shutter.wav",
             // "quandale dingle sounds/NO.wav",
@@ -324,8 +324,6 @@ class UIInteractions {
     init() {
         const audioClick = this.audioClick;
         const audioHover = this.audioHover;
-        audioClick.volume = 0.5;
-        audioHover.volume = 0.5;
 
         const slector_click = "select, input[tyoe='checkbox'], input[type='radio'], " +
             ".menu_button, " +
@@ -335,7 +333,7 @@ class UIInteractions {
 
         const assets = this.assets;
         const assetsfolder = this.assetsfolder;
-        const randomSounds = true;
+        const randomSounds = this.randomSounds;
 
         // add click event to all buttons
         $(document).on("click", slector_click, function() {
