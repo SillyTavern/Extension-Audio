@@ -290,66 +290,62 @@ class dropdown extends EventTarget {
 class UIInteractions {
     audioClick = new Audio();
     audioHover = new Audio();
-    multibleSounds = false;
+    multibleSoundsClicks = false;
+    multibleSoundsHover = false;
     constructor() {
         this.assetsfolder = '';
         this.audioClick.src = this.assetsfolder + ""
         this.audioHover.src = this.assetsfolder + ""
-        this.assets = []
+        this.assetsClick = []
+        this.assetsHover = []
         // "shutter.wav",
         // goofy
         // this.audioHover.src = "assets/sfx/goofy/Bonk Sound Effect 2 (1).wav";
     }
 
     setRandomSounds(sounds) {
-        this.assets = sounds;
+        this.assetsClick = sounds;
     }
 
     setEnableRandomSounds(enable) {
     }
 
     setVolume(volume) {
-        console.log('Setting volume', volume);
         this.audioClick.volume = volume;
         this.audioHover.volume = volume;
     }
 
     setPack(pack) {
-        this.assets = pack.assets;
+        this.assetsClick = pack.assetsClick;
+        this.assetsHover = pack.assetsHover;
         this.assetsfolder = pack.folder;
-        this.multibleSounds = pack.randomSounds;
+        this.multibleSoundsClicks = pack.multiSoundsClicks;
+        this.multibleSoundsHover = pack.multiSoundsHover;
         this.audioClick.src = pack.folder + pack.click;
         this.audioHover.src = pack.folder + pack.hover;
-        console.log(
-            'Setting pack',
-            pack.name,
-            'with',
-            pack.assets.length,
-            'sounds',
-            'and randomSounds',
-            pack.randomSounds
-        )
     }
 
     init() {
         const audioClick = this.audioClick;
         const audioHover = this.audioHover;
 
-        const slectors = "select, input[tyoe='checkbox'], input[type='radio'], " +
+        const slectors = "select, input, " +
             ".menu_button, " +
             "#extensionsMenuButton, #options_button, #send_but, " +
             ".extensions_block .inline-drawer .inline-drawer-toggle, " +
             "#top-settings-holder .drawer .drawer-icon, " +
             ".dropdown-dialog .item, .dropdown-dialog .btn-close";
 
-        const assets = this.assets;
+        const clicks = this.assetsClick;
+        const hovers = this.assetsHover;
         const assetsfolder = this.assetsfolder;
-        const randomSounds = this.multibleSounds;
+        const randomSoundsClick = this.multibleSoundsClicks;
+        const randomSoundsHover = this.multibleSoundsHover;
 
         // add click event to all buttons
         $(document).on("click", slectors, function() {
-            if (randomSounds) {
-                const sound = assetsfolder + assets[Math.floor(Math.random() * Object.keys(assets).length)];
+            if (randomSoundsClick) {
+                const sound = assetsfolder + clicks[Math.floor(Math.random() * Object.keys(clicks).length)];
                 audioClick.src = sound;
             }
             audioClick.currentTime = 0;
@@ -357,6 +353,10 @@ class UIInteractions {
         });
 
         $(document).on("mouseenter", slectors, function() {
+            if (randomSoundsHover) {
+                const sound = assetsfolder + hovers[Math.floor(Math.random() * Object.keys(hovers).length)];
+                audioHover.src = sound;
+            }
             audioHover.currentTime = 0;
             audioHover.play();
         });
@@ -378,11 +378,14 @@ class UIInteractions_PackInfo {
         this.root.attachShadow({ mode: "open" });
         this.root.classList.add('pack-info');
         this.root.shadowRoot.innerHTML = `
+            <link rel="stylesheet" href="css/fontawesome.css" />
             <style>
                 * { margin: 0; padding: 0; }
                 .pack-info .pack-icon {
-                    width: 100px;
-                    height: 100px;
+                    min-width: 100px;
+                    min-height: 100px;
+                    max-width: 100px;
+                    max-height: 100px;
                     background-color: #222;
                     border-radius: 50%;
                     background-size: cover;
@@ -404,8 +407,10 @@ class UIInteractions_PackInfo {
                 .pack-info .body .pack-summary {
                     display: flex;
                     flex-direction: column;
+                    width: 100%;
                 }
             </style>
+            <audio id="audio_preview" src="" preload="auto"></audio>
             <div class="pack-info">
                 <div class="header">
                     <h2>No pack selected</h2>
@@ -452,31 +457,124 @@ class UIInteractions_PackInfo {
         this.root.shadowRoot.querySelector('.header h2').innerText = manifest.name || "No pack selected";
         // @ts-expect-error
         this.root.shadowRoot.querySelector('.description').innerText = manifest.description || "No description";
+
+        const audio = this.root.shadowRoot.querySelector('#audio_preview');
+        // audio on stop
+        audio.onended = () => {
+            // replace the stop icon with the play icon
+            const playButtons = this.root.shadowRoot.querySelectorAll('.play-button.playing');
+
+            for (const playButton of playButtons) {
+                playButton.innerHTML = `<i class="fa-solid fa-sm fa-headphones-simple"></i>`;
+                playButton.classList.remove('playing');
+            }
+        }
+        // source change
+        audio.onloadeddata = () => {
+            const playButtons = this.root.shadowRoot.querySelectorAll('.play-button.playing');
+
+            for (const playButton of playButtons) {
+                playButton.innerHTML = `<i class="fa-solid fa-sm fa-headphones-simple"></i>`;
+                playButton.classList.remove('playing');
+                // does the button have the 'button-clicked' class?
+                if (playButton.classList.contains('button-clicked')) {
+                    // change the icon to a stop icon
+                    playButton.innerHTML = `<i class="fa-solid fa-sm fa-stop"></i>`;
+                    // remove the 'button-clicked' class
+                    playButton.classList.remove('button-clicked');
+                    playButton.classList.add('playing');
+                }
+            }
+        }
+
+        const previewAudio = (src) => {
+            console.log('Previewing audio', src);
+            // @ts-expect-error
+            audio.src = src;
+            // @ts-expect-error
+            audio.play();
+        }
+
+        const createPreviewButton = (src) => {
+            const button = document.createElement('a');
+            const icon = `<i class="fa-solid fa-sm fa-headphones-simple"></i>`
+            button.innerHTML = icon;
+            button.style.marginRight = "5px";
+            button.classList.add('play-button');
+            button.onclick = () => {
+                previewAudio(src)
+                button.classList.add('playing');
+                button.classList.add('button-clicked');
+                // change th icon to a stop icon
+                button.innerHTML = `<i class="fa-solid fa-sm fa-stop"></i>`;
+            };
+            return button;
+        }
+
+        const configured_files = document.createElement('div');
+        configured_files.style.display = "flex";
+        configured_files.style.flexDirection = "row";
+        configured_files.style.justifyContent = "space-between";
+        configured.appendChild(configured_files);
+
+        const configured_onclick = document.createElement('div');
+        configured_onclick.style.width = "100%";
+        configured_files.appendChild(configured_onclick);
+
         // this.root.shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url(${manifest.icon})`;
         if (manifest.click_behaviour) {
-            const click = document.createElement('li');
+            const click = document.createElement('h3');
             click.innerText = `Click: ${manifest.click_behaviour}`;
-            configured.appendChild(click);
+            configured_onclick.appendChild(click);
 
+            const behaviourType = document.createElement('div');
             if (manifest.click_behaviour === "single") {
-                const single = document.createElement('div');
-                single.innerText = `${manifest.file_onclick}`;
-                configured.appendChild(single);
-            } else if (manifest.click_behaviour === "multiple") {
-                const multible = document.createElement('div');
+                behaviourType.innerText = `${manifest.file_onclick}`;
 
-                multible.appendChild(document.createElement('p')).innerText = `Files:`;
+            } else if (manifest.click_behaviour === "multiple") {
+                behaviourType.appendChild(document.createElement('p')).innerText = `Files:`;
 
                 manifest.files_onclick.map((file) => {
-                    multible.appendChild(document.createElement('div')).innerText = file;
+                    const f = document.createElement('div');
+                    f.innerText = file;
+                    f.prepend(createPreviewButton(`${manifest.folder}${file}`));
+                    // f.appendChild(createPreviewButton(`${manifest.folder}${file}`));
+                    behaviourType.appendChild(f);
                 });
-
-                configured.appendChild(multible);
             } else {
-                const none = document.createElement('div');
-                none.innerText = `None`;
-                configured.appendChild(none);
+                behaviourType.innerText = `None`;
             }
+            configured_onclick.appendChild(behaviourType);
+        }
+
+        const configured_mouseneter = document.createElement('div');
+        configured_mouseneter.style.width = "100%";
+        configured_files.appendChild(configured_mouseneter);
+
+        if (manifest.hover_behaviour) {
+            const hover = document.createElement('h3');
+            hover.innerText = `Hover: ${manifest.hover_behaviour}`;
+            configured_mouseneter.appendChild(hover);
+
+            const behaviourType = document.createElement('div');
+            if (manifest.hover_behaviour === "single") {
+                behaviourType.innerText = `${manifest.file_onhover}`;
+            } else if (manifest.hover_behaviour === "multiple") {
+                behaviourType.appendChild(document.createElement('p')).innerText = `Files:`;
+
+                manifest.files_onhover.map((file) => {
+                    behaviourType.appendChild(document.createElement('div')).innerText = file;
+                });
+            } else if (manifest.hover_behaviour === "conditional") {
+                behaviourType.innerText = `Conditional`;
+
+                const condition = document.createElement('div');
+                condition.innerText = `Condition: Not implemented yet`;
+                behaviourType.appendChild(condition);
+            } else {
+                behaviourType.innerText = `None`;
+            }
+            configured_mouseneter.appendChild(behaviourType);
         }
     }
 }
@@ -1297,10 +1395,14 @@ jQuery(async () => {
         console.log('saved pack', pack);
         // does the pack have any keys?
         if (pack && Object.keys(pack).length > 0) {
+            $(".audio_uI_selected_pack").text(pack.name);
+
             audiouiclick.setPack({
                 name: pack.name,
-                randomSounds: pack.click_behaviour == "multiple" ? true : false,
-                assets: pack.files_onclick || [],
+                multiSoundsClicks: pack.click_behaviour == "multiple" ? true : false,
+                multiSoundsHover: pack.hover_behaviour == "multiple" ? true : false,
+                assetsClick: pack.files_onclick || [],
+                assetsHover: pack.files_onhover || [],
                 folder: pack.folder,
                 click: pack.file_onclick,
                 hover: pack.file_onhover,
@@ -1310,9 +1412,20 @@ jQuery(async () => {
         console.log('no saved pack');
         extension_settings.audio.ui_pack = "base";
         saveSettingsDebounced();
-        window.location.reload();
-    }
+        const modal = new modalCreator(
+            'reload-window',
+            'Reloading in 1 second',
+            $(`<div><p>Settings have been updated, set to default pack for ui interactions</p></div>`),
+            $(`<div></div>`),
+            {}
+        );
+        modal.create();
+        modal.show();
 
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    }
     audiouiclick.init();
 
     $('#audio_bgm').hide();
@@ -1390,6 +1503,9 @@ jQuery(async () => {
         asset_pack.setItems([
             { value: 'none', text: 'Select' },
         ]);
+        $(`#${m.id} #config-section-curr-pack #config-ui-curr-pack .config-input`)
+            .append(asset_pack.draw());
+        asset_pack.init();
 
         (await packmanager.getAssetsList()).forEach(async (pack) => {
             console.log('pack', pack);
@@ -1402,6 +1518,10 @@ jQuery(async () => {
                 value: folder,
                 text: name,
             });
+
+            if (extension_settings.audio.ui_pack === folder) {
+                asset_pack.setValue(extension_settings.audio.ui_pack);
+            }
         });
 
         asset_pack.on('change', async (e) =>  {
@@ -1414,10 +1534,7 @@ jQuery(async () => {
             pack_info.setManifest(await packmanager.getManifest(asset_pack.value));
         });
 
-        $(`#${m.id} #config-section-curr-pack #config-ui-curr-pack .config-input`)
-            .append(asset_pack.draw());
-        asset_pack.setValue('none');
-        asset_pack.init();
+
 
         $(`#${m.id} #modal-save`).on('click', async () => {
             console.log('Saving pack', asset_pack.value);
@@ -1446,22 +1563,6 @@ jQuery(async () => {
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
-
-            // const pack = {
-            //     name: p.name,
-            //     randomSounds: p.click_behaviour == "multiple" ? true : false,
-            //     assets: p.files_onclick || [],
-            //     folder: p.folder,
-            //     click: p.file_onclick,
-            //     hover: p.file_onhover,
-            // }
-            // console.log("setup pack", pack);
-
-            // audiouiclick.dispose();
-            // audiouiclick = new UIInteractions();
-            // audiouiclick.setVolume(extension_settings.audio.ui_volume * 0.01);
-            // audiouiclick.setPack(pack);
-            // audiouiclick.init();
         });
     });
 
