@@ -1407,8 +1407,10 @@ jQuery(async () => {
         asset_pack.on('change', async (e) =>  {
             if (asset_pack.value === 'none') {
                 pack_info.setManifest(null)
+                $(`#${m.id} #modal-save`).css('display', 'none');
                 return;
             }
+            $(`#${m.id} #modal-save`).css('display', 'block');
             pack_info.setManifest(await packmanager.getManifest(asset_pack.value));
         });
 
@@ -1420,29 +1422,46 @@ jQuery(async () => {
         $(`#${m.id} #modal-save`).on('click', async () => {
             console.log('Saving pack', asset_pack.value);
             extension_settings.audio.ui_pack = asset_pack.value;
-            saveSettingsDebounced();
+            await saveSettingsDebounced();
             const p = await packmanager.getManifest(asset_pack.value);
 
-            if (p === null) {
+            if (p === null || Object.keys(p).length === 0) {
                 console.error('No pack selected');
                 return;
             }
 
-            const pack = {
-                name: p.name,
-                randomSounds: p.click_behaviour == "multiple" ? true : false,
-                assets: p.files_onclick || [],
-                folder: p.folder,
-                click: p.file_onclick,
-                hover: p.file_onhover,
-            }
-            console.log("setup pack", pack);
+            $(`#${m.id} #modal-save`).css('display', 'none');
+            $(`#${m.id} #modal-close`).css('display', 'none');
 
-            audiouiclick.dispose();
-            audiouiclick = new UIInteractions();
-            audiouiclick.setVolume(extension_settings.audio.ui_volume * 0.01);
-            audiouiclick.setPack(pack);
-            audiouiclick.init();
+            const modal = new modalCreator(
+                'reload-window',
+                'Reloading in 1 second',
+                $(`<div><p>Reloading window to apply changes</p></div>`),
+                $(`<div></div>`),
+                {}
+            );
+            modal.create();
+            modal.show();
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+
+            // const pack = {
+            //     name: p.name,
+            //     randomSounds: p.click_behaviour == "multiple" ? true : false,
+            //     assets: p.files_onclick || [],
+            //     folder: p.folder,
+            //     click: p.file_onclick,
+            //     hover: p.file_onhover,
+            // }
+            // console.log("setup pack", pack);
+
+            // audiouiclick.dispose();
+            // audiouiclick = new UIInteractions();
+            // audiouiclick.setVolume(extension_settings.audio.ui_volume * 0.01);
+            // audiouiclick.setPack(pack);
+            // audiouiclick.init();
         });
     });
 
