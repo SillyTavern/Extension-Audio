@@ -2,8 +2,11 @@
     "name": "Base Soundboard",
     "description": "A basic soundboard with a single click sound and a hover sound.",
     "icon": "icon.png",
+    "elementSelector": "div",
     "click_behaviour": "single",
-    "file_onclick": "click.mp3",
+    "hover_behaviour": "single",
+    "file_onclick": "click/UI_Click.ogg",
     "files_onclick": [],
-    "file_onhover": "hover.mp3"
+    "file_onhover": "click/UI_Hover.ogg",
+    "files_onhover": []
 }
