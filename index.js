@@ -494,6 +494,12 @@ class UIInteractions_PackInfo {
             // @ts-expect-error
             audio.play();
         }
+        const stopAudio = () => {
+            // @ts-expect-error
+            audio.pause();
+            // @ts-expect-error
+            audio.currentTime = 0;
+        }
 
         const createPreviewButton = (src) => {
             const button = document.createElement('a');
@@ -502,11 +508,16 @@ class UIInteractions_PackInfo {
             button.style.marginRight = "5px";
             button.classList.add('play-button');
             button.onclick = () => {
-                previewAudio(src)
-                button.classList.add('playing');
-                button.classList.add('button-clicked');
-                // change th icon to a stop icon
-                button.innerHTML = `<i class="fa-solid fa-sm fa-stop"></i>`;
+                if (button.classList.contains('playing')) {
+                    stopAudio();
+                    button.classList.remove('playing');
+                    button.innerHTML = `<i class="fa-solid fa-sm fa-headphones-simple"></i>`;
+                } else {
+                    button.classList.add('playing');
+                    button.classList.add('button-clicked');
+                    previewAudio(src)
+                    button.innerHTML = `<i class="fa-solid fa-sm fa-stop"></i>`;
+                }
             };
             return button;
         }
