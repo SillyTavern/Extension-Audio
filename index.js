@@ -481,9 +481,14 @@ class UIInteractions_PackInfo {
     }
 
     setManifest(manifest) {
+
         const shadowRoot = this.root.shadowRoot;
         const configured = shadowRoot.querySelector('.configured');
         configured.innerHTML = '';
+        if (manifest === null) {
+            this.clear();
+            throw new Error('Manifest is null');
+        }
         console.log('Setting manifest', manifest.name);
         // @ts-expect-error
         shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url("img/No-Image-Placeholder.svg")`;
@@ -1527,8 +1532,13 @@ jQuery(async () => {
                 <div class="config-section">
                     <div id="config-section-curr-pack" class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: space-between;">
                         <div id="config-ui-curr-pack" style="width: 100%;">
-                            <h3>Selected Pack</h3>
-                            <div class="config-input">
+                            <h3
+                                style="margin:0; margin-bottom: 10px;"
+                            >Selected Pack</h3>
+                            <div class="config-input" style="display:flex; gap:10px;">
+                                <div class="menu_button" id="refresh-ui-pack"
+                                    style="width: 20%; margin: 0; min-width: 100px;"
+                                >Refresh</div>
                             </div>
                         </div>
                     </div>
@@ -1545,7 +1555,7 @@ jQuery(async () => {
             </div>`),
             $(`<div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 10px;">
                 <div class="menu_button" id="modal-save"
-                    style="height: min-content; width:max-content;"
+                    style="height: min-content; width:max-content; display: none;"
                 >Save and apply</div>
                 <div class="menu_button" id="modal-close">Close</div>
             </div>`),
@@ -1566,43 +1576,57 @@ jQuery(async () => {
             modalAPI.removeModal(m.id);
         });
 
+        $(`#${m.id} #refresh-ui-pack`).on('click', async () => {
+            await refresh();
+        });
+
         const asset_pack = new dropdown('config-current-pack')
         asset_pack.setItems([
             { value: 'none', text: 'Select' },
         ]);
         $(`#${m.id} #config-section-curr-pack #config-ui-curr-pack .config-input`)
-            .append(asset_pack.draw());
+            .prepend(asset_pack.draw());
         asset_pack.init();
 
-        (await packmanager.getAssetsList()).forEach(async (pack) => {
-            let folder = String(pack).replace(/\\/g, '/');
-            folder = folder.substring(folder.lastIndexOf('/') + 1);
-            manifests.set(folder, await packmanager.getManifest(folder));
-            const name = manifests.get(folder).name;
-            asset_pack.addItem({
-                value: folder,
-                text: name,
-            });
+        const refresh = async () => {
+            asset_pack.setItems([
+                { value: 'none', text: 'Select' },
+            ]);
+            asset_pack.setValue('none');
+            pack_info.clear()
+            manifests.clear();
+            $(`#${m.id} #modal-save`).css('display', 'none');
 
-            if (extension_settings.audio.ui_pack === folder) {
-                asset_pack.setValue(extension_settings.audio.ui_pack);
-            }
-        });
+            (await packmanager.getAssetsList()).forEach(async (pack) => {
+                let folder = String(pack).replace(/\\/g, '/');
+                folder = folder.substring(folder.lastIndexOf('/') + 1);
+                manifests.set(folder, await packmanager.getManifest(folder));
+                const name = manifests.get(folder).name;
+                asset_pack.addItem({
+                    value: folder,
+                    text: name,
+                });
+
+                if (extension_settings.audio.ui_pack === folder) {
+                    asset_pack.setValue(extension_settings.audio.ui_pack);
+                }
+            });
+        }
+
 
         asset_pack.on('change', async (e) =>  {
             pack_info.clear();
             // name to "loading..."
             if (asset_pack.value === 'none') {
-                pack_info.setManifest(null)
                 $(`#${m.id} #modal-save`).css('display', 'none');
+                pack_info.setManifest(null)
                 return;
             }
-            pack_info.root.shadowRoot.querySelector('.pack-info .header h2').innerText = 'Loading...';
             $(`#${m.id} #modal-save`).css('display', 'block');
             pack_info.setManifest(await manifests.get(asset_pack.value));
         });
 
-
+        await refresh();
 
         $(`#${m.id} #modal-save`).on('click', async () => {
             console.log('Saving pack', asset_pack.value);
