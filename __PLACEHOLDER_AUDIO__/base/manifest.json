@@ -1,0 +1,9 @@
+{
+    "name": "Base Soundboard",
+    "description": "A basic soundboard with a single click sound and a hover sound.",
+    "icon": "icon.png",
+    "click_behaviour": "single",
+    "file_onclick": "click.mp3",
+    "files_onclick": [],
+    "file_onhover": "hover.mp3"
+}

@@ -19,6 +19,7 @@ import { registerSlashCommand } from '../../../slash-commands.js';
 export { MODULE_NAME };
 
 import { modalAPI, modalCreator } from './libs/modal.js';
+import { PackManagerV1 } from './libs/packmanager.v1.js';
 
 const extensionName = 'Extension-Audio';
 const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
@@ -120,15 +121,21 @@ class dropdown extends EventTarget {
         this.items = [];
     }
 
-    addItems(items) {
-        console.log('Adding items', items);
+    setItems(items) {
         items = items.filter((item) => item);
         this.items = items;
+    }
+
+    addItem(item) {
+        this.items.push(item);
     }
 
     draw(opts) {
         const base = $(`<div class='dropdown' id='${this.id}' style='${opts && opts.style ? opts.style : ''}'>
             <p class='selected'>Select</p>
+            <div class='icon ico-white'>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7,10L12,15L17,10H7Z" /></svg>
+            </div>
         </div>`);
         return base;
     }
@@ -142,10 +149,17 @@ class dropdown extends EventTarget {
         const dialog = $(`<div class='dropdown-dialog'>
             <div class="dismiss-box"></div>
         </div>`);
-        const dialogBody = $(`<div class='body'>
-        <div class='btn-close' style="display: flex;">${
-            c.items.filter((item) => item.value === c.value)[0].text
+
+        let headertest = ""
+        try {
+            headertest = c.items.filter((item) => item.value === c.value)[0].text
+        } catch (e) {
+            console.error('Error setting value', e);
+            headertest = "Select"
         }
+
+        const dialogBody = $(`<div class='body'>
+        <div class='btn-close' style="display: flex;">${headertest}
             <div class='icon ico-white' style="margin-left: auto; height:auto;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>close</title><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
             </div>
@@ -261,6 +275,12 @@ class dropdown extends EventTarget {
         this.value = value;
         try {
             $(`${this.dropdown} .selected`).text(this.items.filter((item) => item.value === value)[0].text);
+            const event = new Event('change', {});
+            event.detail = {
+                id: this.id,
+                value: value
+            };
+            this.dispatchEvent(event);
         } catch (e) {
             console.error('Error setting value', e);
         }
@@ -270,43 +290,15 @@ class dropdown extends EventTarget {
 class UIInteractions {
     audioClick = new Audio();
     audioHover = new Audio();
-    randomSounds = false;
+    multibleSounds = false;
     constructor() {
-        this.assetsfolder = 'assets/sfx/';
-        this.audioClick.src = this.assetsfolder + "CLICK_17.ogg"
-        this.audioHover.src = this.assetsfolder + "UI_Hover.ogg"
-        this.assets = [
-            "shutter.wav",
-            // "quandale dingle sounds/NO.wav",
-            // "quandale dingle sounds/OW.wav",
-            // "quandale dingle sounds/STOP.wav",
-            // "quandale dingle sounds/WHAT.wav",
-            // "quandale dingle sounds/beralalelaale.wav",
-            // "quandale dingle sounds/elelewlelwlaoh.wav",
-            // "quandale dingle sounds/goofy laugh.wav",
-            // "quandale dingle sounds/GRUROOAH.wav",
-            // "quandale dingle sounds/hoowuhmmm.wav",
-            // "quandale dingle sounds/huwwuuwao.wav",
-            // "quandale dingle sounds/mmm yummy.wav",
-            // "quandale dingle sounds/obobobor.wav",
-            // "quandale dingle sounds/onsuckme.wav",
-            // "quandale dingle sounds/oyaah.wav",
-            // "quandale dingle sounds/roroaorh.wav",
-            // "quandale dingle sounds/RUAOOOH.wav",
-            // "quandale dingle sounds/RUOAAAOH.wav",
-            // "quandale dingle sounds/scooby laugh.wav",
-            // "quandale dingle sounds/something pen idk.wav",
-            // "quandale dingle sounds/what in tarnation.wav",
-            // "quandale dingle sounds/wooohhm.wav",
-            // "quandale dingle sounds/wruoahohhuhu.wav",
-            // "quandale dingle sounds/wuaauruoh.wav"
-        ]
+        this.assetsfolder = '';
+        this.audioClick.src = this.assetsfolder + ""
+        this.audioHover.src = this.assetsfolder + ""
+        this.assets = []
+        // "shutter.wav",
         // goofy
         // this.audioHover.src = "assets/sfx/goofy/Bonk Sound Effect 2 (1).wav";
-    }
-
-    setRandomSoundsEnabled(enable) {
-        this.randomSounds = enable;
     }
 
     setRandomSounds(sounds) {
@@ -321,22 +313,41 @@ class UIInteractions {
         this.audioClick.volume = volume;
         this.audioHover.volume = volume;
     }
+
+    setPack(pack) {
+        this.assets = pack.assets;
+        this.assetsfolder = pack.folder;
+        this.multibleSounds = pack.randomSounds;
+        this.audioClick.src = pack.folder + pack.click;
+        this.audioHover.src = pack.folder + pack.hover;
+        console.log(
+            'Setting pack',
+            pack.name,
+            'with',
+            pack.assets.length,
+            'sounds',
+            'and randomSounds',
+            pack.randomSounds
+        )
+    }
+
     init() {
         const audioClick = this.audioClick;
         const audioHover = this.audioHover;
 
-        const slector_click = "select, input[tyoe='checkbox'], input[type='radio'], " +
+        const slectors = "select, input[tyoe='checkbox'], input[type='radio'], " +
             ".menu_button, " +
             "#extensionsMenuButton, #options_button, #send_but, " +
             ".extensions_block .inline-drawer .inline-drawer-toggle, " +
-            "#top-settings-holder .drawer .drawer-icon";
+            "#top-settings-holder .drawer .drawer-icon, " +
+            ".dropdown-dialog .item, .dropdown-dialog .btn-close";
 
         const assets = this.assets;
         const assetsfolder = this.assetsfolder;
-        const randomSounds = this.randomSounds;
+        const randomSounds = this.multibleSounds;
 
         // add click event to all buttons
-        $(document).on("click", slector_click, function() {
+        $(document).on("click", slectors, function() {
             if (randomSounds) {
                 const sound = assetsfolder + assets[Math.floor(Math.random() * Object.keys(assets).length)];
                 audioClick.src = sound;
@@ -345,13 +356,132 @@ class UIInteractions {
             audioClick.play();
         });
 
-        const slector_hover = "button, .menu_button, .inline-drawer-toggle, .drawer-icon";
-        $(document).on("mouseenter", slector_hover, function() {
+        $(document).on("mouseenter", slectors, function() {
             audioHover.currentTime = 0;
             audioHover.play();
         });
     }
+
+    dispose() {
+        $(document).off("click");
+        $(document).off("mouseenter");
+    }
 }
+
+class UIInteractions_PackInfo {
+    root = document.createElement('div');
+    pack_name = "No pack selected"
+    pack_icon = null;
+    pack_description = "";
+
+    constructor() {
+        this.root.attachShadow({ mode: "open" });
+        this.root.classList.add('pack-info');
+        this.root.shadowRoot.innerHTML = `
+            <style>
+                * { margin: 0; padding: 0; }
+                .pack-info .pack-icon {
+                    width: 100px;
+                    height: 100px;
+                    background-color: #222;
+                    border-radius: 50%;
+                    background-size: cover;
+                    background-position: center;
+                    background-image: url('img/No-Image-Placeholder.svg');
+                }
+                ul {
+                    list-style: none;
+                }
+                .pack-info {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .pack-info .body {
+                    display: flex;
+                    gap: 24px;
+                }
+                .pack-info .body .pack-summary {
+                    display: flex;
+                    flex-direction: column;
+                }
+            </style>
+            <div class="pack-info">
+                <div class="header">
+                    <h2>No pack selected</h2>
+                </div>
+                <div class="body">
+                    <div class="pack-icon"></div>
+                    <div class="pack-summary">
+                        <p class="description">No pack selected</p>
+                        <div class="pack-configured-items">
+                            <p>Configured items:</p>
+                            <div class="configured"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    draw() {
+        return this.root;
+    }
+
+    setName(name) {
+        // @ts-expect-error
+        this.root.shadowRoot.querySelector('.header h2').innerText = name;
+    }
+
+    setManifest(manifest) {
+        const configured = this.root.shadowRoot.querySelector('.configured');
+        configured.innerHTML = '';
+        console.log('Setting manifest', manifest);
+        // @ts-expect-error
+        this.root.shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url("img/No-Image-Placeholder.svg")`;
+        if (manifest === null) {
+            manifest = {
+                name: "No pack selected",
+                description: "No description",
+                icon: "img/No-Image-Placeholder.svg"
+            }
+        }
+        // @ts-expect-error
+        this.root.shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url(${manifest.icon || "img/No-Image-Placeholder.svg"})`;
+        // @ts-expect-error
+        this.root.shadowRoot.querySelector('.header h2').innerText = manifest.name || "No pack selected";
+        // @ts-expect-error
+        this.root.shadowRoot.querySelector('.description').innerText = manifest.description || "No description";
+        // this.root.shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url(${manifest.icon})`;
+        if (manifest.click_behaviour) {
+            const click = document.createElement('li');
+            click.innerText = `Click: ${manifest.click_behaviour}`;
+            configured.appendChild(click);
+
+            if (manifest.click_behaviour === "single") {
+                const single = document.createElement('div');
+                single.innerText = `${manifest.file_onclick}`;
+                configured.appendChild(single);
+            } else if (manifest.click_behaviour === "multiple") {
+                const multible = document.createElement('div');
+
+                multible.appendChild(document.createElement('p')).innerText = `Files:`;
+
+                manifest.files_onclick.map((file) => {
+                    multible.appendChild(document.createElement('div')).innerText = file;
+                });
+
+                configured.appendChild(multible);
+            } else {
+                const none = document.createElement('div');
+                none.innerText = `None`;
+                configured.appendChild(none);
+            }
+        }
+    }
+}
+
+const packmanager = new PackManagerV1();
 
 function loadSettings() {
     if (extension_settings.audio === undefined)
@@ -369,6 +499,7 @@ function loadSettings() {
 
     $('#audio_bgm_volume_slider').val(extension_settings.audio.bgm_volume);
     $('#audio_ambient_volume_slider').val(extension_settings.audio.ambient_volume);
+    $("#audio_ui_volume_slider").val(extension_settings.audio.ui_volume);
 
     if (extension_settings.audio.bgm_muted) {
         $('#audio_bgm_mute_icon').removeClass('fa-volume-high');
@@ -1140,27 +1271,6 @@ function onVolumeSliderWheelEvent(e) {
 }
 
 //#############################//
-//  Button click               //
-//#############################//
-
-async function setupButtonsClick() {
-    const audio = new Audio("assets/sfx/shutter.wav");
-    audio.volume = 1;
-
-    const slector = ".menu_button, " +
-        "#extensionsMenuButton, #options_button, #send_but, " +
-        ".extensions_block .inline-drawer .inline-drawer-toggle, " +
-        "#top-settings-holder .drawer .drawer-icon";
-
-    // add click event to all buttons
-    $(document).on("click", slector, function () {
-        console.log('click');
-        audio.currentTime = 0;
-        audio.play();
-    });
-}
-
-//#############################//
 //  Extension load             //
 //#############################//
 
@@ -1179,7 +1289,30 @@ jQuery(async () => {
     $('#audio_ambient').attr('loop', "true");
 
 
-    const audiouiclick = new UIInteractions();
+    let audiouiclick = new UIInteractions();
+
+    // is there a saved pack?
+    if (extension_settings.audio.ui_pack) {
+        const pack = await packmanager.getManifest(extension_settings.audio.ui_pack);
+        console.log('saved pack', pack);
+        // does the pack have any keys?
+        if (pack && Object.keys(pack).length > 0) {
+            audiouiclick.setPack({
+                name: pack.name,
+                randomSounds: pack.click_behaviour == "multiple" ? true : false,
+                assets: pack.files_onclick || [],
+                folder: pack.folder,
+                click: pack.file_onclick,
+                hover: pack.file_onhover,
+            });
+        }
+    } else {
+        console.log('no saved pack');
+        extension_settings.audio.ui_pack = "base";
+        saveSettingsDebounced();
+        window.location.reload();
+    }
+
     audiouiclick.init();
 
     $('#audio_bgm').hide();
@@ -1208,30 +1341,33 @@ jQuery(async () => {
         extension_settings.audio.ui_volume = $('#audio_ui_volume_slider').val();
         saveSettingsDebounced();
     });
-    $('#audio_ui_config').on('click', (e) => {
+    $('#audio_ui_config').on('click', async (e) => {
         const m = new modalCreator(
             "config-ui-interactions",
             "UI Interactions",
             $(`<div class="style-config-ui-interactions">
                 <div class="config-section">
-                    <h3>Clicking Behavior</h3>
-                    <div id="confog-section-clicking-behavior" class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: space-between;">
-                        <div id="config-ui-clicking-sound" class="config-input">
-                            <p>Clicking sound</p>
+                    <div id="config-section-curr-pack" class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: space-between;">
+                        <div id="config-ui-curr-pack" style="width: 50%;">
+                            <h3>Selected Pack</h3>
                             <div class="config-input">
                             </div>
                         </div>
-                        <div>
-                            <p>File(s)</p>
-                            <div class="config-input">
-                                <input type="text" id="audio_ui_click" value="${extension_settings.audio.ui_click}" />
-                                <label for="audio_ui_click">Click</label>
-                            </div>
+                        <div id="config-selected-pack" style="width: 50%;">
+                        </div>
+                    </div>
+                </div>
+                <div class="config-section">
+                    <div id="config-section-pack-info" class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: space-between;">
+                        <div id="config-pack-info" style="width: 100%;" class="config-input">
                         </div>
                     </div>
                 </div>
             </div>`),
-            $(`<div>
+            $(`<div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 10px;">
+                <div class="menu_button" id="modal-save"
+                    style="height: min-content; width:max-content;"
+                >Save and apply</div>
                 <div class="menu_button" id="modal-close">Close</div>
             </div>`),
             {}
@@ -1240,19 +1376,73 @@ jQuery(async () => {
         m.create();
         m.show();
 
-        const dropdown_clicking_sound_type = new dropdown('config-clicking-behavior-sound-drop')
-        dropdown_clicking_sound_type.addItems([
-            { value: 'default', text: 'Single' },
-            { value: 'custom', text: 'Multiple' }
-        ]);
-        dropdown_clicking_sound_type.setValue('default');
-        $(`#${m.id} #confog-section-clicking-behavior #config-ui-clicking-sound .config-input`)
-            .append(dropdown_clicking_sound_type.draw());
-        dropdown_clicking_sound_type.init();
+
+        // pack info
+        const pack_info = new UIInteractions_PackInfo();
+        $(`#${m.id} #config-section-pack-info #config-pack-info`).html(pack_info.draw());
 
         $(`#${m.id} #modal-close`).on('click', () => {
             console.log('close');
             modalAPI.removeModal(m.id);
+        });
+
+        const asset_pack = new dropdown('config-current-pack')
+        asset_pack.setItems([
+            { value: 'none', text: 'Select' },
+        ]);
+
+        (await packmanager.getAssetsList()).forEach(async (pack) => {
+            console.log('pack', pack);
+            let folder = String(pack).replace(/\\/g, '/');
+            // only show the last folder
+            folder = folder.substring(folder.lastIndexOf('/') + 1);
+            console.log('folder', folder);
+            const name = await packmanager.getManifestName(folder);
+            asset_pack.addItem({
+                value: folder,
+                text: name,
+            });
+        });
+
+        asset_pack.on('change', async (e) =>  {
+            if (asset_pack.value === 'none') {
+                pack_info.setManifest(null)
+                return;
+            }
+            pack_info.setManifest(await packmanager.getManifest(asset_pack.value));
+        });
+
+        $(`#${m.id} #config-section-curr-pack #config-ui-curr-pack .config-input`)
+            .append(asset_pack.draw());
+        asset_pack.setValue('none');
+        asset_pack.init();
+
+        $(`#${m.id} #modal-save`).on('click', async () => {
+            console.log('Saving pack', asset_pack.value);
+            extension_settings.audio.ui_pack = asset_pack.value;
+            saveSettingsDebounced();
+            const p = await packmanager.getManifest(asset_pack.value);
+
+            if (p === null) {
+                console.error('No pack selected');
+                return;
+            }
+
+            const pack = {
+                name: p.name,
+                randomSounds: p.click_behaviour == "multiple" ? true : false,
+                assets: p.files_onclick || [],
+                folder: p.folder,
+                click: p.file_onclick,
+                hover: p.file_onhover,
+            }
+            console.log("setup pack", pack);
+
+            audiouiclick.dispose();
+            audiouiclick = new UIInteractions();
+            audiouiclick.setVolume(extension_settings.audio.ui_volume * 0.01);
+            audiouiclick.setPack(pack);
+            audiouiclick.init();
         });
     });
 
