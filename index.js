@@ -184,7 +184,6 @@ class dropdown extends EventTarget {
             el.on('click', () => {
                 c.setValue(item.value);
                 $(c.dropdown).removeClass('open');
-                dispatch(c.id, item.value);
                 dialog.remove();
             });
             dialogBody.append(el);
@@ -381,6 +380,13 @@ class UIInteractions_PackInfo {
             <link rel="stylesheet" href="css/fontawesome.css" />
             <style>
                 * { margin: 0; padding: 0; }
+                .flex {
+                    display: flex;
+                }
+                button { cursor: pointer; border: none; background: none; color: inherit;
+                    width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+                }
+
                 .pack-info .pack-icon {
                     min-width: 100px;
                     min-height: 100px;
@@ -396,6 +402,7 @@ class UIInteractions_PackInfo {
                     list-style: none;
                 }
                 .pack-info {
+                    overflow: auto;
                     display: flex;
                     flex-direction: column;
                     gap: 10px;
@@ -409,14 +416,23 @@ class UIInteractions_PackInfo {
                     flex-direction: column;
                     width: 100%;
                 }
+                .pack-info.mobile .view-mobile {
+                    flex-direction: column !important;
+                }
+                .pack-info.mobile .view-mobile-row {
+                    flex-direction: row !important;
+                }
             </style>
             <audio id="audio_preview" src="" preload="auto"></audio>
             <div class="pack-info">
                 <div class="header">
                     <h2>No pack selected</h2>
                 </div>
-                <div class="body">
-                    <div class="pack-icon"></div>
+                <div class="body view-mobile">
+                    <div class="pack-information view-mobile-row" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div class="pack-icon"></div>
+                        <p class="author">Author: <span>Unknown</span></p>
+                    </div>
                     <div class="pack-summary">
                         <p class="description">No pack selected</p>
                         <div class="pack-configured-items">
@@ -427,6 +443,19 @@ class UIInteractions_PackInfo {
                 </div>
             </div>
         `;
+
+        // check if the pack-info is in mobile view
+        const packInfo = this.root.shadowRoot.querySelector('.pack-info');
+        if (window.innerWidth <= 768) {
+            packInfo.classList.add('mobile');
+        }
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) {
+                packInfo.classList.add('mobile');
+            } else {
+                packInfo.classList.remove('mobile');
+            }
+        });
     }
 
     draw() {
@@ -438,31 +467,52 @@ class UIInteractions_PackInfo {
         this.root.shadowRoot.querySelector('.header h2').innerText = name;
     }
 
-    setManifest(manifest) {
-        const configured = this.root.shadowRoot.querySelector('.configured');
-        configured.innerHTML = '';
-        console.log('Setting manifest', manifest);
+    clear() {
+        const shadowRoot = this.root.shadowRoot;
         // @ts-expect-error
-        this.root.shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url("img/No-Image-Placeholder.svg")`;
+        shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url("img/No-Image-Placeholder.svg")`;
+        // @ts-expect-error
+        shadowRoot.querySelector('.header h2').innerText = "No pack selected";
+        // @ts-expect-error
+        shadowRoot.querySelector('.description').innerText = "No description";
+        // @ts-expect-error
+        shadowRoot.querySelector('.author span').innerText = "Unknown";
+        shadowRoot.querySelector('.configured').innerHTML = '';
+    }
+
+    setManifest(manifest) {
+        const shadowRoot = this.root.shadowRoot;
+        const configured = shadowRoot.querySelector('.configured');
+        configured.innerHTML = '';
+        console.log('Setting manifest', manifest.name);
+        // @ts-expect-error
+        shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url("img/No-Image-Placeholder.svg")`;
         if (manifest === null) {
             manifest = {
                 name: "No pack selected",
                 description: "No description",
-                icon: "img/No-Image-Placeholder.svg"
+                icon: "img/No-Image-Placeholder.svg",
+                author: "Unknown",
             }
         }
         // @ts-expect-error
-        this.root.shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url(${manifest.icon || "img/No-Image-Placeholder.svg"})`;
+        shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url(${manifest.icon || "img/No-Image-Placeholder.svg"})`;
         // @ts-expect-error
-        this.root.shadowRoot.querySelector('.header h2').innerText = manifest.name || "No pack selected";
+        shadowRoot.querySelector('.header h2').innerText = manifest.name || "No pack selected";
         // @ts-expect-error
-        this.root.shadowRoot.querySelector('.description').innerText = manifest.description || "No description";
+        shadowRoot.querySelector('.description').innerText = manifest.description || "No description";
+        // @ts-expect-error
+        shadowRoot.querySelector('.author span').innerText = manifest.author || "Unknown";
 
-        const audio = this.root.shadowRoot.querySelector('#audio_preview');
+        if (manifest === null) {
+            return;
+        }
+
+        const audio = shadowRoot.querySelector('#audio_preview');
         // audio on stop
         audio.onended = () => {
             // replace the stop icon with the play icon
-            const playButtons = this.root.shadowRoot.querySelectorAll('.play-button.playing');
+            const playButtons = shadowRoot.querySelectorAll('.play-button.playing');
 
             for (const playButton of playButtons) {
                 playButton.innerHTML = `<i class="fa-solid fa-sm fa-headphones-simple"></i>`;
@@ -471,7 +521,7 @@ class UIInteractions_PackInfo {
         }
         // source change
         audio.onloadeddata = () => {
-            const playButtons = this.root.shadowRoot.querySelectorAll('.play-button.playing');
+            const playButtons = shadowRoot.querySelectorAll('.play-button.playing');
 
             for (const playButton of playButtons) {
                 playButton.innerHTML = `<i class="fa-solid fa-sm fa-headphones-simple"></i>`;
@@ -502,7 +552,7 @@ class UIInteractions_PackInfo {
         }
 
         const createPreviewButton = (src) => {
-            const button = document.createElement('a');
+            const button = document.createElement('button');
             const icon = `<i class="fa-solid fa-sm fa-headphones-simple"></i>`
             button.innerHTML = icon;
             button.style.marginRight = "5px";
@@ -526,6 +576,7 @@ class UIInteractions_PackInfo {
         configured_files.style.display = "flex";
         configured_files.style.flexDirection = "row";
         configured_files.style.justifyContent = "space-between";
+        configured_files.classList.add('view-mobile');
         configured.appendChild(configured_files);
 
         const configured_onclick = document.createElement('div');
@@ -540,16 +591,17 @@ class UIInteractions_PackInfo {
 
             const behaviourType = document.createElement('div');
             if (manifest.click_behaviour === "single") {
-                behaviourType.innerText = `${manifest.file_onclick}`;
-
+                const f = document.createElement('div');
+                f.classList.add('flex');
+                f.innerText = `${manifest.file_onclick}`;
+                f.prepend(createPreviewButton(`${manifest.folder}${manifest.file_onclick}`));
+                behaviourType.appendChild(f);
             } else if (manifest.click_behaviour === "multiple") {
-                behaviourType.appendChild(document.createElement('p')).innerText = `Files:`;
-
                 manifest.files_onclick.map((file) => {
                     const f = document.createElement('div');
+                    f.classList.add('flex');
                     f.innerText = file;
                     f.prepend(createPreviewButton(`${manifest.folder}${file}`));
-                    // f.appendChild(createPreviewButton(`${manifest.folder}${file}`));
                     behaviourType.appendChild(f);
                 });
             } else {
@@ -569,10 +621,12 @@ class UIInteractions_PackInfo {
 
             const behaviourType = document.createElement('div');
             if (manifest.hover_behaviour === "single") {
-                behaviourType.innerText = `${manifest.file_onhover}`;
+                const f = document.createElement('div');
+                f.classList.add('flex');
+                f.innerText = `${manifest.file_onhover}`;
+                f.prepend(createPreviewButton(`${manifest.folder}${manifest.file_onhover}`));
+                behaviourType.appendChild(f);
             } else if (manifest.hover_behaviour === "multiple") {
-                behaviourType.appendChild(document.createElement('p')).innerText = `Files:`;
-
                 manifest.files_onhover.map((file) => {
                     behaviourType.appendChild(document.createElement('div')).innerText = file;
                 });
@@ -1472,16 +1526,17 @@ jQuery(async () => {
             $(`<div class="style-config-ui-interactions">
                 <div class="config-section">
                     <div id="config-section-curr-pack" class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: space-between;">
-                        <div id="config-ui-curr-pack" style="width: 50%;">
+                        <div id="config-ui-curr-pack" style="width: 100%;">
                             <h3>Selected Pack</h3>
                             <div class="config-input">
                             </div>
                         </div>
-                        <div id="config-selected-pack" style="width: 50%;">
-                        </div>
                     </div>
                 </div>
                 <div class="config-section">
+                    <p
+                        style="margin: 10px; margin-bottom: 10px; padding: 0; font-size: 1.5em; font-weight: bold;"
+                    >Pack information</p>
                     <div id="config-section-pack-info" class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: space-between;">
                         <div id="config-pack-info" style="width: 100%;" class="config-input">
                         </div>
@@ -1500,6 +1555,7 @@ jQuery(async () => {
         m.create();
         m.show();
 
+        let manifests = new Map();
 
         // pack info
         const pack_info = new UIInteractions_PackInfo();
@@ -1519,12 +1575,10 @@ jQuery(async () => {
         asset_pack.init();
 
         (await packmanager.getAssetsList()).forEach(async (pack) => {
-            console.log('pack', pack);
             let folder = String(pack).replace(/\\/g, '/');
-            // only show the last folder
             folder = folder.substring(folder.lastIndexOf('/') + 1);
-            console.log('folder', folder);
-            const name = await packmanager.getManifestName(folder);
+            manifests.set(folder, await packmanager.getManifest(folder));
+            const name = manifests.get(folder).name;
             asset_pack.addItem({
                 value: folder,
                 text: name,
@@ -1536,13 +1590,16 @@ jQuery(async () => {
         });
 
         asset_pack.on('change', async (e) =>  {
+            pack_info.clear();
+            // name to "loading..."
             if (asset_pack.value === 'none') {
                 pack_info.setManifest(null)
                 $(`#${m.id} #modal-save`).css('display', 'none');
                 return;
             }
+            pack_info.root.shadowRoot.querySelector('.pack-info .header h2').innerText = 'Loading...';
             $(`#${m.id} #modal-save`).css('display', 'block');
-            pack_info.setManifest(await packmanager.getManifest(asset_pack.value));
+            pack_info.setManifest(await manifests.get(asset_pack.value));
         });
 
 

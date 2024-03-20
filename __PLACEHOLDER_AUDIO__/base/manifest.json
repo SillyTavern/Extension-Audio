@@ -2,6 +2,7 @@
     "name": "Base Soundboard",
     "description": "A basic soundboard with a single click sound and a hover sound.",
     "icon": "icon.png",
+    "author": "Everyone",
     "elementSelector": "div",
     "click_behaviour": "single",
     "hover_behaviour": "single",

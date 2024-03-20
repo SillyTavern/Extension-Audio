@@ -272,7 +272,6 @@ gap: 12px; */
     overflow: auto;
     top: 0;
     left: 0;
-    backdrop-filter: blur(8px);
 }
 
 #modal-container[for-extension="dynamic-audio"].hide {
