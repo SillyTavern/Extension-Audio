@@ -1484,17 +1484,25 @@ jQuery(async () => {
         saveSettingsDebounced();
         const modal = new modalCreator(
             'reload-window',
-            'Reloading in 1 second',
-            $(`<div><p>Settings have been updated, set to default pack for ui interactions</p></div>`),
-            $(`<div></div>`),
+            'Reloading in 10 second',
+            $(`<div><p>Settings have been updated, the UI interactions sound pack has been set to "base".</p></div>`),
+            $(`<div>
+                <div class="menu_button" id="modal-reload"
+                    style="height: min-content; width:max-content;"
+                >Reload now</div>
+            </div>`),
             {}
         );
         modal.create();
         modal.show();
 
+        $(`#${modal.id} #modal-reload`).on('click', () => {
+            window.location.reload();
+        });
+
         setTimeout(() => {
             window.location.reload();
-        }, 1000);
+        }, 10000);
     }
     audiouiclick.init();
 
