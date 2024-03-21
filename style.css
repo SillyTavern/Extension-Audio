@@ -281,7 +281,7 @@ gap: 12px; */
     width: -moz-available;
     height: -webkit-fill-available;
     height: -moz-available;
-    height: 100vh;
+    height: 100dvh;
     /* backdrop-filter: blur(4px); */
     display: flex;
     justify-content: center;
