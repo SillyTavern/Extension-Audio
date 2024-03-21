@@ -1,6 +1,6 @@
 {
-    "name": "Base Soundboard",
-    "description": "A basic soundboard with a single click sound and a hover sound.",
+    "name": "Base Soundpack",
+    "description": "A basic soundpack with a single click sound and a hover sound.",
     "icon": "icon.png",
     "author": "Everyone",
     "elementSelector": "div",

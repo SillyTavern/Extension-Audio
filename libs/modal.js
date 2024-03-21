@@ -15,7 +15,7 @@ const createModal = function (id, title, body, footer, settings) {
     const randomid = Math.random().toString(36).substring(7);
     const modal = $(`
     <div class="modal-wrapper">
-        <div class="modal ${settings && settings.class || ""}" id="${id}-${randomid}" tabindex="-1" >
+        <div class="modal ${settings && settings.class || ""}" id="${id}-${randomid}" tabindex="-1" style="${settings && settings.style ? settings.style : ''}">
             <div class="header">
                 <div class="title"><span ${ settings && settings.title_i18n ? `data-i18n="${settings.title_i18n}"` : ''}	>${title}</span></div>
                 ${ settings && settings.showclosebutton ? ` <div class="close"><span>&times;</span></div>` : ''}

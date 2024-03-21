@@ -379,14 +379,18 @@ class UIInteractions_PackInfo {
         this.root.shadowRoot.innerHTML = `
             <link rel="stylesheet" href="css/fontawesome.css" />
             <style>
-                * { margin: 0; padding: 0; }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
                 .flex {
                     display: flex;
                 }
                 button { cursor: pointer; border: none; background: none; color: inherit;
                     width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
                 }
-
+                .config-section {
+                    border: 1px rgb(75, 75, 75) solid;
+                    padding: 10px;
+                    margin: 10px 0px;
+                }
                 .pack-info .pack-icon {
                     min-width: 100px;
                     min-height: 100px;
@@ -577,6 +581,29 @@ class UIInteractions_PackInfo {
             return button;
         }
 
+        const createMuteButton = (audio) => {
+            // <div id="audio_ui_mute" class="menu_button audio-player-button">
+            //     <i class="fa-solid fa-volume-high fa-lg fa-fw" id="audio_ui_mute_icon"></i>
+            // </div>
+            const button = document.createElement('button');
+            const icon = document.createElement('i');
+            icon.classList.add('fa-solid');
+            icon.classList.add('fa-volume-high');
+            icon.classList.add('fa-lg');
+            icon.classList.add('fa-fw');
+            icon.id = audio + '_mute_icon';
+            button.appendChild(icon);
+            button.classList.add('menu_button');
+            button.classList.add('audio-player-button');
+            button.onclick = () => {
+                const muted = $(`#${audio}`).prop('muted');
+                $(`#${audio}`).prop('muted', !muted);
+                icon.classList.toggle('fa-volume-high');
+                icon.classList.toggle('fa-volume-mute');
+            };
+            return button;
+        }
+
         const configured_files = document.createElement('div');
         configured_files.style.display = "flex";
         configured_files.style.flexDirection = "row";
@@ -584,67 +611,75 @@ class UIInteractions_PackInfo {
         configured_files.classList.add('view-mobile');
         configured.appendChild(configured_files);
 
-        const configured_onclick = document.createElement('div');
-        configured_onclick.style.width = "100%";
-        configured_files.appendChild(configured_onclick);
 
         // this.root.shadowRoot.querySelector('.pack-icon').style.backgroundImage = `url(${manifest.icon})`;
         if (manifest.click_behaviour) {
-            const click = document.createElement('h3');
-            click.innerText = `Click: ${manifest.click_behaviour}`;
-            configured_onclick.appendChild(click);
+            const configured_onclick = document.createElement('div');
+            configured_onclick.classList.add("config-section");
+            configured_onclick.style.marginRight = "5px";
+            configured_onclick.style.width = "100%";
+            configured_files.appendChild(configured_onclick);
 
-            const behaviourType = document.createElement('div');
+            const header = document.createElement('div');
+            const behaviour = document.createElement('h3');
+            behaviour.innerText = `Click: ${manifest.click_behaviour}`;
+            header.appendChild(behaviour);
+
+            configured_onclick.appendChild(header);
+
+            const list = document.createElement('div');
             if (manifest.click_behaviour === "single") {
                 const f = document.createElement('div');
                 f.classList.add('flex');
                 f.innerText = `${manifest.file_onclick}`;
                 f.prepend(createPreviewButton(`${manifest.folder}${manifest.file_onclick}`));
-                behaviourType.appendChild(f);
+                list.appendChild(f);
             } else if (manifest.click_behaviour === "multiple") {
                 manifest.files_onclick.map((file) => {
                     const f = document.createElement('div');
                     f.classList.add('flex');
                     f.innerText = file;
                     f.prepend(createPreviewButton(`${manifest.folder}${file}`));
-                    behaviourType.appendChild(f);
+                    list.appendChild(f);
                 });
             } else {
-                behaviourType.innerText = `None`;
+                list.innerText = `None`;
             }
-            configured_onclick.appendChild(behaviourType);
+            configured_onclick.appendChild(list);
         }
 
-        const configured_mouseneter = document.createElement('div');
-        configured_mouseneter.style.width = "100%";
-        configured_files.appendChild(configured_mouseneter);
 
         if (manifest.hover_behaviour) {
+            const configured_mouseneter = document.createElement('div');
+            configured_mouseneter.classList.add("config-section");
+            configured_mouseneter.style.width = "100%";
+            configured_files.appendChild(configured_mouseneter);
+
             const hover = document.createElement('h3');
             hover.innerText = `Hover: ${manifest.hover_behaviour}`;
             configured_mouseneter.appendChild(hover);
 
-            const behaviourType = document.createElement('div');
+            const list = document.createElement('div');
             if (manifest.hover_behaviour === "single") {
                 const f = document.createElement('div');
                 f.classList.add('flex');
                 f.innerText = `${manifest.file_onhover}`;
                 f.prepend(createPreviewButton(`${manifest.folder}${manifest.file_onhover}`));
-                behaviourType.appendChild(f);
+                list.appendChild(f);
             } else if (manifest.hover_behaviour === "multiple") {
                 manifest.files_onhover.map((file) => {
-                    behaviourType.appendChild(document.createElement('div')).innerText = file;
+                    list.appendChild(document.createElement('div')).innerText = file;
                 });
             } else if (manifest.hover_behaviour === "conditional") {
-                behaviourType.innerText = `Conditional`;
+                list.innerText = `Conditional`;
 
                 const condition = document.createElement('div');
                 condition.innerText = `Condition: Not implemented yet`;
-                behaviourType.appendChild(condition);
+                list.appendChild(condition);
             } else {
-                behaviourType.innerText = `None`;
+                list.innerText = `None`;
             }
-            configured_mouseneter.appendChild(behaviourType);
+            configured_mouseneter.appendChild(list);
         }
     }
 }
@@ -1551,6 +1586,40 @@ jQuery(async () => {
                         </div>
                     </div>
                 </div>
+                <div class="config-section special-style-config-sound-settings">
+                    <style>
+                        .special-style-config-sound-settings p {
+                            margin: 0;
+                        }
+
+                        .special-style-config-sound-settings .config-sound-onclick,
+                        .special-style-config-sound-settings .config-sound-onhover {
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        }
+                    </style>
+                    <p
+                        style="margin: 10px; margin-bottom: 10px; padding: 0; font-size: 1.5em; font-weight: bold;"
+                    >Sound Settings</p>
+                    <div class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: flex-start;">
+                        <div>
+                            <h4>Sound on click and hover</h4>
+                            <div class="config-sound-onclick">
+                                <button class="menu_button config-ui-mute-click" id="mute-sound-onclick" style="font-size: 1.2em; width: 32px; height: 32px; display: block;">
+                                    <i class="fas fa-volume-high"></i>
+                                </button>
+                                <p>on click</p>
+                            </div>
+                            <div class="config-sound-onhover">
+                                <button class="menu_button config-ui-mute-hover" id="mute-sound-onhover" style="font-size: 1.2em; width: 32px; height: 32px; display: block">
+                                    <i class="fas fa-volume-high"></i>
+                                </button>
+                                <p>on hover</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="config-section">
                     <p
                         style="margin: 10px; margin-bottom: 10px; padding: 0; font-size: 1.5em; font-weight: bold;"
@@ -1567,7 +1636,10 @@ jQuery(async () => {
                 >Save and apply</div>
                 <div class="menu_button" id="modal-close">Close</div>
             </div>`),
-            {}
+            {
+                class: "modal-exlg",
+                style: "height: 100%"
+            }
         )
 
         m.create();
@@ -1588,6 +1660,46 @@ jQuery(async () => {
             await refresh();
         });
 
+        // mute buttons
+        $(`#${m.id} #mute-sound-onclick`).on('click', async (e) => {
+            audiouiclick.audioClick.currentTime = 0;
+
+            if (audiouiclick.audioClick.muted) {
+                audiouiclick.audioClick.muted = false;
+                $(e.target).find('i').removeClass('fa-volume-mute');
+                $(e.target).find('i').addClass('fa-volume-high');
+            }
+            else {
+                audiouiclick.audioClick.muted = true;
+                $(e.target).find('i').removeClass('fa-volume-high');
+                $(e.target).find('i').addClass('fa-volume-mute');
+            }
+
+            extension_settings.audio.ui_muted = audiouiclick.audioClick.muted;
+            saveSettingsDebounced();
+        });
+
+        $(`#${m.id} #mute-sound-onhover`).on('click', async (e) => {
+            audiouiclick.audioHover.currentTime = 0;
+
+            if (audiouiclick.audioHover.muted) {
+                audiouiclick.audioHover.muted = false;
+            } else {
+                audiouiclick.audioHover.muted = true;
+            }
+
+            if (audiouiclick.audioHover.muted) {
+                $(e.target).find('i').removeClass('fa-volume-high');
+                $(e.target).find('i').addClass('fa-volume-mute');
+            } else {
+                $(e.target).find('i').removeClass('fa-volume-mute');
+                $(e.target).find('i').addClass('fa-volume-high');
+            }
+
+            extension_settings.audio.ui_muted = audiouiclick.audioHover.muted;
+            saveSettingsDebounced();
+        })
+
         const asset_pack = new dropdown('config-current-pack')
         asset_pack.setItems([
             { value: 'none', text: 'Select' },
@@ -1602,6 +1714,7 @@ jQuery(async () => {
             ]);
             asset_pack.setValue('none');
             pack_info.clear()
+            pack_info.root.shadowRoot.querySelector('.pack-info .header h2').innerText = 'Loading...';
             manifests.clear();
             $(`#${m.id} #modal-save`).css('display', 'none');
 
