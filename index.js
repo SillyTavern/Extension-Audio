@@ -1813,7 +1813,13 @@ jQuery(async () => {
             $(`#${m.id} #modal-save`).css('display', 'block'); pack_info.setManifest(await manifests.get(asset_pack.value));
         });
 
-        await refresh();
+        try {
+            await refresh();
+        } catch (e) {
+            console.error('Error refreshing packs', e);
+            $(`#${m.id} #modal-save`).css('display', 'none');
+            $(`#${m.id} #refresh-ui-pack`).css('display', 'none');
+        }
 
         $(`#${m.id} #modal-save`).on('click', async () => {
             console.log('Saving pack', asset_pack.value);
