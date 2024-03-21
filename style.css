@@ -86,6 +86,25 @@ gap: 12px; */
     gap: 10px;
 }
 
+#audio_settings .audio_ui_selected_pack {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+#audio_settings .audio_ui_selected_pack_icon {
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    max-height: 32px;
+    margin-right: 10px;
+    border-radius: 50%;
+    background: #3f3f3f;
+    background-image: url("/img/No-Image-Placeholder.svg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 /* STYLES */
 
 .style-config-ui-interactions {

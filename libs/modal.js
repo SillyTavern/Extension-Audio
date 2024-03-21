@@ -66,8 +66,6 @@ const modalAPI = {
     addModal: function (id, modal) {if (modalmap.has(id)) {modalAPI.removeModal(id)}modalmap.set(id, modal)},
     removeModal: function (id) {modalAPI.hideModal(id);modalmap.delete(id);},
     showModal: function (id) {
-        $("body").css("overflow", "hidden");
-        // check if modal exists
         const modal = modalmap.get(id)
         if (typeof modal === 'undefined') {
             throw new Error('Modal does not exist')
@@ -93,7 +91,6 @@ const modalAPI = {
             }, 500);
             return
         }
-        $("body").css("overflow", "auto");
         modalContainer.removeClass('show')
         modalContainer.addClass('hide')
         $('body').removeClass('modal-open')

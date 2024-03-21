@@ -61,21 +61,17 @@
                 <div class="audio-ui-block">
                     <label for="audio_ui_volume_slider">UI</label>
                     <div class="audio-container">
-                        <div class="mute-div">
-                            <div id="audio_ui_mute" class="menu_button audio-player-button">
-                                <i class="fa-solid fa-volume-high fa-lg fa-fw" id="audio_ui_mute_icon"></i>
+                        <div class="config">
+                            <div id="audio_ui_config" class="menu_button audio-player-button">
+                                <i class="fa-solid fa-cog fa-lg fa-fw"></i>
                             </div>
                         </div>
                         <div class="vol">
                             <input type="range" class ="audio-slider" id ="audio_ui_volume_slider" value = "0" maxlength ="100">
                         </div>
-                        <div class="playlist" style="display: flex; align-items: center;">
-                            <p class="audio_uI_selected_pack" style="margin: 0;"></p>
-                        </div>
-                        <div class="config">
-                            <div id="audio_ui_config" class="menu_button audio-player-button">
-                                <i class="fa-solid fa-cog fa-lg fa-fw"></i>
-                            </div>
+                        <div class="playlist" style="display: flex; align-items: center; flex-grow: 1; width: 50%;">
+                            <div class="audio_ui_selected_pack_icon"></div>
+                            <p class="audio_ui_selected_pack" style="margin: 0;"></p>
                         </div>
                         <!-- <div class="audio-mixer-element audio-mixer-lock">
                             <div id="audio_bgm_lock" class="menu_button audio-player-button">

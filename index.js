@@ -684,6 +684,42 @@ class UIInteractions_PackInfo {
     }
 }
 
+class VolumeTooltip {
+    overlay = document.createElement('div');
+    tooltip = document.createElement('div');
+    currentSlider = null;
+    selector = null;
+    constructor( selector ) {
+        this.selector = selector;
+        this.overlay.classList.add('volume-overlay');
+        this.tooltip.classList.add('volume-tooltip');
+        this.overlay.appendChild(this.tooltip);
+        document.body.appendChild(this.overlay);
+    }
+
+    watch() {
+        const tooltip = this.tooltip;
+        const overlay = this.overlay;
+        const selector = this.selector;
+        $("html").on("change", selector, function() {
+            const slider = $(this);
+            const value = slider.val();
+            const offset = slider.offset();
+            const width = slider.width();
+            const left = offset.left + width / 2;
+            const top = offset.top - 30;
+            tooltip.text(value);
+            tooltip.css({ top: top, left: left });
+            overlay.addClass('show');
+        });
+    }
+
+    show() {
+    }
+    hide() {
+    }
+}
+
 const packmanager = new PackManagerV1();
 
 function loadSettings() {
@@ -1500,7 +1536,7 @@ jQuery(async () => {
         console.log('saved pack', pack);
         // does the pack have any keys?
         if (pack && Object.keys(pack).length > 0) {
-            $(".audio_uI_selected_pack").text(pack.name);
+            $(".audio_ui_selected_pack").text(pack.name);
 
             audiouiclick.setPack({
                 name: pack.name,
@@ -1512,6 +1548,7 @@ jQuery(async () => {
                 click: pack.file_onclick,
                 hover: pack.file_onhover,
             });
+            $(".audio_ui_selected_pack_icon").css("background-image", `url(${pack.icon})`);
         }
     } else {
         console.log('no saved pack');
@@ -1574,6 +1611,7 @@ jQuery(async () => {
         extension_settings.audio.ui_volume = $('#audio_ui_volume_slider').val();
         saveSettingsDebounced();
     });
+
     $('#audio_ui_config').on('click', async (e) => {
         const m = new modalCreator(
             "config-ui-interactions",
@@ -1610,13 +1648,13 @@ jQuery(async () => {
                         <div>
                             <h4>Sound on click and hover</h4>
                             <div class="config-sound-onclick">
-                                <button class="menu_button config-ui-mute-click" id="mute-sound-onclick" style="font-size: 1.2em; width: 32px; height: 32px; display: block;">
+                                <button class="menu_button config-ui-mute-click" id="mute-sound-onclick" style="font-size: 1.2em; width: 32px; height: 32px; display: flex;">
                                     <i class="mute-icon fas fa-volume-high"></i>
                                 </button>
                                 <p>on click</p>
                             </div>
                             <div class="config-sound-onhover">
-                                <button class="menu_button config-ui-mute-hover" id="mute-sound-onhover" style="font-size: 1.2em; width: 32px; height: 32px; display: block">
+                                <button class="menu_button config-ui-mute-hover" id="mute-sound-onhover" style="font-size: 1.2em; width: 32px; height: 32px; display: flex">
                                     <i class="mute-icon fas fa-volume-high"></i>
                                 </button>
                                 <p>on hover</p>
@@ -1670,10 +1708,10 @@ jQuery(async () => {
 
             if (audiouiclick.audioClick.muted) {
                 audiouiclick.audioClick.muted = false;
-                i.removeClass('fa-volume-mute').addClass('fa-volume-high');
+                i.removeClass('fa-volume-mute redOverlayGlow').addClass('fa-volume-high');
             } else {
                 audiouiclick.audioClick.muted = true;
-                i.removeClass('fa-volume-high').addClass('fa-volume-mute');
+                i.removeClass('fa-volume-high').addClass('fa-volume-mute redOverlayGlow');
             }
 
             extension_settings.audio.ui_click_muted = audiouiclick.audioClick.muted;
@@ -1686,10 +1724,10 @@ jQuery(async () => {
 
             if (audiouiclick.audioHover.muted) {
                 audiouiclick.audioHover.muted = false;
-                i.removeClass('fa-volume-mute').addClass('fa-volume-high');
+                i.removeClass('fa-volume-mute redOverlayGlow').addClass('fa-volume-high');
             } else {
                 audiouiclick.audioHover.muted = true;
-                i.removeClass('fa-volume-high').addClass('fa-volume-mute');
+                i.removeClass('fa-volume-high').addClass('fa-volume-mute redOverlayGlow');
             }
 
             extension_settings.audio.ui_hover_muted = audiouiclick.audioHover.muted;
@@ -1698,11 +1736,11 @@ jQuery(async () => {
 
         if (extension_settings.audio.ui_click_muted) {
             const i = $(`#${m.id} #mute-sound-onclick .mute-icon`);
-            i.removeClass('fa-volume-high').addClass('fa-volume-mute');
+            i.removeClass('fa-volume-high').addClass('fa-volume-mute redOverlayGlow');
         }
         if (extension_settings.audio.ui_hover_muted) {
             const i = $(`#${m.id} #mute-sound-onhover .mute-icon`);
-            i.removeClass('fa-volume-high').addClass('fa-volume-mute');
+            i.removeClass('fa-volume-high').addClass('fa-volume-mute redOverlayGlow');
         }
 
         const asset_pack = new dropdown('config-current-pack')
