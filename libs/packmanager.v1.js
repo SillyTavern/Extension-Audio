@@ -46,26 +46,7 @@ class UIPackManager extends EventTarget {
 class PackManagerV1 extends UIPackManager {
     constructor() {
         super();
-        // this.packs = [];
-        // this.getAssetsList("ui-packs").then(async (packs) => {
-        //     let newPacks = [];
-        //     console.debug(DEBUG_PREFIX_V1, 'Found packs:', this.packs);
-        //     for (const pack of this.packs) {
-        //         const name = await this.getManifestName(pack);
-        //         newPacks.push({
-        //             name: name,
-        //             path: pack,
-        //         });
-        //     }
-        //     this.packs = packs;
-        // });
-        // console.log('PackManagerV1', this.packs);
     }
-
-    // async refreshPacks() {
-    //     this.packs = await this.getAssetsList("ui-packs");
-    //     console.debug(DEBUG_PREFIX_V1, 'Found packs:', this.packs);
-    // }
 
     async getManifestName(pack)
     {
@@ -86,7 +67,6 @@ class PackManagerV1 extends UIPackManager {
                 `${this.base}${pack}/${this.baseManifest}`
             ).then(response => response.json());
             f.folder = `${this.base}${pack}/`;
-            // set the full path for the icon
             f.icon = `${this.base}${pack}/${f.icon}`;
             return f;
         } catch (error) {

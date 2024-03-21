@@ -310,8 +310,14 @@ class UIInteractions {
     }
 
     setVolume(volume) {
-        this.audioClick.volume = volume;
-        this.audioHover.volume = volume;
+        if (volume == null) { throw new Error('Volume is null'); }
+        if (isNaN(volume)) { throw new Error('Volume is NaN'); }
+        if (typeof volume === 'number') {
+            this.audioClick.volume = volume;
+            this.audioHover.volume = volume;
+        } else {
+            throw new Error('Volume is not a number');
+        }
     }
 
     setPack(pack) {
@@ -343,6 +349,8 @@ class UIInteractions {
 
         // add click event to all buttons
         $(document).on("click", slectors, function() {
+            if (!extension_settings.audio.enabled)
+                return;
             if (randomSoundsClick) {
                 const sound = assetsfolder + clicks[Math.floor(Math.random() * Object.keys(clicks).length)];
                 audioClick.src = sound;
@@ -352,6 +360,8 @@ class UIInteractions {
         });
 
         $(document).on("mouseenter", slectors, function() {
+            if (!extension_settings.audio.enabled)
+                return;
             if (randomSoundsHover) {
                 const sound = assetsfolder + hovers[Math.floor(Math.random() * Object.keys(hovers).length)];
                 audioHover.src = sound;
@@ -1514,6 +1524,14 @@ function onVolumeSliderWheelEvent(e) {
 //#############################//
 
 // This function is called when the extension is loaded
+
+const tryCatch = (fn, fallback) => {
+    try {
+        return fn();
+    } catch (e) {
+        return fallback(e);
+    }
+}
 jQuery(async () => {
     const windowHtml = $(await $.get(`${extensionFolderPath}/window.html`));
 
@@ -1583,7 +1601,15 @@ jQuery(async () => {
     if (extension_settings.audio.ui_hover_muted) {
         audiouiclick.audioHover.muted = true;
     }
-    audiouiclick.setVolume(extension_settings.audio.ui_volume * 0.01);
+
+    tryCatch(
+        () => audiouiclick.setVolume(extension_settings.audio.ui_volume * 0.01),
+        (e) => {
+            console.error('Error setting volume', e)
+            audiouiclick.setVolume(0.5);
+        }
+    )
+
 
     $('#audio_bgm').hide();
     $('#audio_bgm_lock').on('click', onBGMLockClick);
@@ -1597,13 +1623,6 @@ jQuery(async () => {
     $('#audio_ambient_volume_slider').on('input', onAmbientVolumeChange);
 
     $('#audio_ui').hide();
-    $('#audio_ui_mute').on('click', (e) => {
-        audiouiclick.audioClick.currentTime = 0;
-        audiouiclick.audioClick.play();
-        // is it muted?
-        toggleAudioUIMuteButton(!extension_settings.audio.ui_muted)
-        onAudioUIMuteClick(e);
-    });
     $('#audio_ui_volume_slider').on('input', (e) => {
         audiouiclick.audioClick.currentTime = 0;
         audiouiclick.audioClick.play();
@@ -1617,6 +1636,13 @@ jQuery(async () => {
             "config-ui-interactions",
             "UI Interactions",
             $(`<div class="style-config-ui-interactions">
+                ${
+                    extension_settings.audio.enabled == false ? `<div class="config-section" style="background-color: #fff00055; color: #fff;">
+                    <p style="margin: 10px; margin-bottom: 10px; padding: 0; font-size: 1.5em; font-weight: bold;"
+                    >Enable Dynamic Audio to have UI interactions sounds</p>
+                    <p style="margin: 0; margin-left: 10px; margin-bottom: 10px;">Preview audio are still enabled</p>
+                </div>` : ''
+                }
                 <div class="config-section">
                     <div id="config-section-curr-pack" class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: space-between;">
                         <div id="config-ui-curr-pack" style="width: 100%;">
@@ -1776,8 +1802,6 @@ jQuery(async () => {
                 }
             });
         }
-
-
         asset_pack.on('change', async (e) =>  {
             pack_info.clear();
             // name to "loading..."
@@ -1786,8 +1810,7 @@ jQuery(async () => {
                 pack_info.setManifest(null)
                 return;
             }
-            $(`#${m.id} #modal-save`).css('display', 'block');
-            pack_info.setManifest(await manifests.get(asset_pack.value));
+            $(`#${m.id} #modal-save`).css('display', 'block'); pack_info.setManifest(await manifests.get(asset_pack.value));
         });
 
         await refresh();
