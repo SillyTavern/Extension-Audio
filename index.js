@@ -1816,6 +1816,7 @@ jQuery(async () => {
         try {
             await refresh();
         } catch (e) {
+            pack_info.root.shadowRoot.querySelector('.pack-info .header h2').innerText = 'Error loading packs';
             console.error('Error refreshing packs', e);
             $(`#${m.id} #modal-save`).css('display', 'none');
             $(`#${m.id} #refresh-ui-pack`).css('display', 'none');
