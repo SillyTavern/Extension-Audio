@@ -1807,7 +1807,12 @@ jQuery(async () => {
             // name to "loading..."
             if (asset_pack.value === 'none') {
                 $(`#${m.id} #modal-save`).css('display', 'none');
-                pack_info.setManifest(null)
+                tryCatch(
+                    () => pack_info.setManifest(null),
+                    (e) => {
+                        console.warn('Error setting pack info', e);
+                    }
+                )
                 return;
             }
             $(`#${m.id} #modal-save`).css('display', 'block'); pack_info.setManifest(await manifests.get(asset_pack.value));
