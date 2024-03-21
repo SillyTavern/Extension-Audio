@@ -1540,6 +1540,13 @@ jQuery(async () => {
         }, 10000);
     }
     audiouiclick.init();
+    if (extension_settings.audio.ui_click_muted) {
+        audiouiclick.audioClick.muted = true;
+    }
+    if (extension_settings.audio.ui_hover_muted) {
+        audiouiclick.audioHover.muted = true;
+    }
+    audiouiclick.setVolume(extension_settings.audio.ui_volume * 0.01);
 
     $('#audio_bgm').hide();
     $('#audio_bgm_lock').on('click', onBGMLockClick);
@@ -1594,26 +1601,23 @@ jQuery(async () => {
 
                         .special-style-config-sound-settings .config-sound-onclick,
                         .special-style-config-sound-settings .config-sound-onhover {
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
+                            display: flex; align-items: center; gap: 10px;
                         }
                     </style>
-                    <p
-                        style="margin: 10px; margin-bottom: 10px; padding: 0; font-size: 1.5em; font-weight: bold;"
+                    <p style="margin: 10px; margin-bottom: 10px; padding: 0; font-size: 1.5em; font-weight: bold;"
                     >Sound Settings</p>
                     <div class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: flex-start;">
                         <div>
                             <h4>Sound on click and hover</h4>
                             <div class="config-sound-onclick">
                                 <button class="menu_button config-ui-mute-click" id="mute-sound-onclick" style="font-size: 1.2em; width: 32px; height: 32px; display: block;">
-                                    <i class="fas fa-volume-high"></i>
+                                    <i class="mute-icon fas fa-volume-high"></i>
                                 </button>
                                 <p>on click</p>
                             </div>
                             <div class="config-sound-onhover">
                                 <button class="menu_button config-ui-mute-hover" id="mute-sound-onhover" style="font-size: 1.2em; width: 32px; height: 32px; display: block">
-                                    <i class="fas fa-volume-high"></i>
+                                    <i class="mute-icon fas fa-volume-high"></i>
                                 </button>
                                 <p>on hover</p>
                             </div>
@@ -1621,8 +1625,7 @@ jQuery(async () => {
                     </div>
                 </div>
                 <div class="config-section">
-                    <p
-                        style="margin: 10px; margin-bottom: 10px; padding: 0; font-size: 1.5em; font-weight: bold;"
+                    <p style="margin: 10px; margin-bottom: 10px; padding: 0; font-size: 1.5em; font-weight: bold;"
                     >Pack information</p>
                     <div id="config-section-pack-info" class="config-row config-row-last" style="display: flex; align-items: flex-start; justify-content: space-between;">
                         <div id="config-pack-info" style="width: 100%;" class="config-input">
@@ -1663,42 +1666,44 @@ jQuery(async () => {
         // mute buttons
         $(`#${m.id} #mute-sound-onclick`).on('click', async (e) => {
             audiouiclick.audioClick.currentTime = 0;
+            const i = $(`#${m.id} #mute-sound-onclick .mute-icon`);
 
             if (audiouiclick.audioClick.muted) {
                 audiouiclick.audioClick.muted = false;
-                $(e.target).find('i').removeClass('fa-volume-mute');
-                $(e.target).find('i').addClass('fa-volume-high');
-            }
-            else {
+                i.removeClass('fa-volume-mute').addClass('fa-volume-high');
+            } else {
                 audiouiclick.audioClick.muted = true;
-                $(e.target).find('i').removeClass('fa-volume-high');
-                $(e.target).find('i').addClass('fa-volume-mute');
+                i.removeClass('fa-volume-high').addClass('fa-volume-mute');
             }
 
-            extension_settings.audio.ui_muted = audiouiclick.audioClick.muted;
+            extension_settings.audio.ui_click_muted = audiouiclick.audioClick.muted;
             saveSettingsDebounced();
         });
 
         $(`#${m.id} #mute-sound-onhover`).on('click', async (e) => {
             audiouiclick.audioHover.currentTime = 0;
+            const i = $(`#${m.id} #mute-sound-onhover .mute-icon`);
 
             if (audiouiclick.audioHover.muted) {
                 audiouiclick.audioHover.muted = false;
+                i.removeClass('fa-volume-mute').addClass('fa-volume-high');
             } else {
                 audiouiclick.audioHover.muted = true;
+                i.removeClass('fa-volume-high').addClass('fa-volume-mute');
             }
 
-            if (audiouiclick.audioHover.muted) {
-                $(e.target).find('i').removeClass('fa-volume-high');
-                $(e.target).find('i').addClass('fa-volume-mute');
-            } else {
-                $(e.target).find('i').removeClass('fa-volume-mute');
-                $(e.target).find('i').addClass('fa-volume-high');
-            }
-
-            extension_settings.audio.ui_muted = audiouiclick.audioHover.muted;
+            extension_settings.audio.ui_hover_muted = audiouiclick.audioHover.muted;
             saveSettingsDebounced();
         })
+
+        if (extension_settings.audio.ui_click_muted) {
+            const i = $(`#${m.id} #mute-sound-onclick .mute-icon`);
+            i.removeClass('fa-volume-high').addClass('fa-volume-mute');
+        }
+        if (extension_settings.audio.ui_hover_muted) {
+            const i = $(`#${m.id} #mute-sound-onhover .mute-icon`);
+            i.removeClass('fa-volume-high').addClass('fa-volume-mute');
+        }
 
         const asset_pack = new dropdown('config-current-pack')
         asset_pack.setItems([
@@ -1778,8 +1783,6 @@ jQuery(async () => {
             }, 1000);
         });
     });
-
-    audiouiclick.setVolume(extension_settings.audio.ui_volume * 0.01);
 
     document.getElementById('audio_ambient_volume_slider').addEventListener('wheel', onVolumeSliderWheelEvent, { passive: false });
     document.getElementById('audio_bgm_volume_slider').addEventListener('wheel', onVolumeSliderWheelEvent, { passive: false });
