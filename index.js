@@ -15,7 +15,11 @@ Ideas:
 import { saveSettingsDebounced, getRequestHeaders } from '../../../../script.js';
 import { getContext, extension_settings, ModuleWorkerWrapper } from '../../../extensions.js';
 import { isDataURL } from '../../../utils.js';
-import { registerSlashCommand } from '../../../slash-commands.js';
+import { SlashCommandParser } from '../../../slash-commands/SlashCommandParser.js';
+import { SlashCommand } from '../../../slash-commands/SlashCommand.js';
+import { SlashCommandArgument } from '../../../slash-commands/SlashCommandArgument.js';
+import { SlashCommandEnumValue, enumTypes } from '../../../slash-commands/SlashCommandEnumValue.js';
+import { enumIcons } from '../../../slash-commands/SlashCommandCommonEnumsProvider.js';
 export { MODULE_NAME };
 
 const extensionName = 'Extension-Audio';
@@ -925,14 +929,40 @@ jQuery(async () => {
     setInterval(wrapper.update.bind(wrapper), UPDATE_INTERVAL);
     moduleWorker();
 
-    registerSlashCommand('music', setBGMSlashCommand, ['bgm'], '<span class="monospace">(file path)</span> – force change of bgm for given file', true, true);
-    registerSlashCommand('ambient', setAmbientSlashCommand, [], '<span class="monospace">(file path)</span> – force change of ambient audio for given file', true, true);
+    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
+        name: 'music',
+        aliases: ['bgm'],
+        helpString: 'Force change of bgm for given file.',
+        callback: setBGMSlashCommand,
+        unnamedArgumentList: [
+            SlashCommandArgument.fromProps({
+                description: 'file path',
+                isRequired: true,
+                acceptsMultiple: false,
+                enumProvider: () => Array.from(document.querySelectorAll('[id=audio_bgm_select] option')).map(o => new SlashCommandEnumValue(o instanceof HTMLOptionElement && o.value, null, enumTypes.enum, enumIcons.file)),
+            }),
+        ],
+    }));
+
+    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
+        name: 'ambient',
+        helpString: 'Force change of ambient audio for given file.',
+        callback: setAmbientSlashCommand,
+        unnamedArgumentList: [
+            SlashCommandArgument.fromProps({
+                description: 'file path',
+                isRequired: true,
+                acceptsMultiple: false,
+                enumProvider: () => Array.from(document.querySelectorAll('[id=audio_ambient_select] option')).map(o => new SlashCommandEnumValue(o instanceof HTMLOptionElement && o.value, null, enumTypes.enum, enumIcons.file)),
+            }),
+        ],
+    }));
 });
 
 async function setBGMSlashCommand(_, file) {
     if (!file) {
         console.log('No bgm file provided');
-        return;
+        return '';
     }
 
     file = file.trim().toLowerCase();
@@ -949,17 +979,19 @@ async function setBGMSlashCommand(_, file) {
 
     if (!fileItem) {
         console.log('Bgm file path not valid');
-        return;
+        return '';
     }
 
     $('#audio_bgm_select').val(fileItem);
     onBGMSelectChange();
+
+    return '';
 }
 
 async function setAmbientSlashCommand(_, file) {
     if (!file) {
         console.log('No ambient file provided');
-        return;
+        return '';
     }
 
     file = file.trim().toLowerCase();
@@ -974,9 +1006,11 @@ async function setAmbientSlashCommand(_, file) {
 
     if (!fileItem) {
         console.log('Bgm file path not valid');
-        return;
+        return '';
     }
 
     $('#audio_ambient_select').val(fileItem);
     onAmbientSelectChange();
+
+    return '';
 }
